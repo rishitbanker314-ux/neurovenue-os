@@ -1,0 +1,7 @@
+{
+  "agents": [
+    { "name": "simulation_agent" },
+    { "name": "routing_agent" },
+    { "name": "nudge_agent" }
+  ]
+}
