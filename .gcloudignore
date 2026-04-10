@@ -1,0 +1,13 @@
+.gcloudignore
+.git
+.gitignore
+.dockerignore
+node_modules/
+.docker/
+**/*.sock
+__pycache__/
+*.pyc
+.env
+.venv
+venv/
+frontend/node_modules/
