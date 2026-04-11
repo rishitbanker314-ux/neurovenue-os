@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import HeatmapGrid from './components/HeatmapGrid';
 import RouteOverlay from './components/RouteOverlay';
 import NotificationPanel from './components/NotificationPanel';
+import PredictionsPanel from './components/PredictionsPanel';
 import ControlPanel from './components/ControlPanel';
 import ScenarioControls from './components/ScenarioControls';
 
@@ -18,6 +19,7 @@ function App() {
   const [tick, setTick] = useState(0);
   const [phase, setPhase] = useState('—');
   const [connected, setConnected] = useState(false);
+  const [predictions, setPredictions] = useState(null);
 
   // Fetch live state from simulation engine API
   const fetchState = useCallback(async (s, e) => {
@@ -44,6 +46,7 @@ function App() {
       // Update metadata
       setTick(data.tick);
       setPhase(data.phase);
+      setPredictions(data.predictions);
       setConnected(true);
     } catch (err) {
       console.error('API fetch failed:', err);
@@ -88,42 +91,48 @@ function App() {
   const hotZones = zones.filter(z => z.density > 80).length;
 
   return (
-    <div className="app">
+    <main className="app">
       {/* Header with connection status */}
-      <header className="app-header">
+      <header className="app-header" role="banner">
         <h1>NeuroVenue OS</h1>
-        <div className="status">
+        <div className="status" aria-live="polite">
           <span className={`dot ${connected ? 'connected' : 'disconnected'}`} />
           {connected ? `Tick ${tick} · ${phase}` : 'Disconnected'}
         </div>
       </header>
 
       {/* Stats bar */}
-      <div className="stats-bar" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px', marginBottom: '28px' }}>
+      <section className="stats-bar" aria-live="polite" aria-label="Live Simulation Metrics" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px', marginBottom: '28px' }}>
         <div className="stat" style={{ padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '16px' }}>Avg Density: <strong>{avgDensity}</strong></div>
         <div className="stat" style={{ padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '16px' }}>Hot Zones: <strong>{hotZones}</strong></div>
         <div className="stat" style={{ padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '16px' }}>Time Saved: <strong>{route.time_saved}s</strong></div>
         <div className="stat" style={{ padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '16px' }}>Confidence: <strong style={{ color: '#6366f1' }}>{Math.min(99, Math.max(82, 98 - (hotZones * 2) - (route.path.length * 1)))}%</strong></div>
-      </div>
+      </section>
 
-      {/* Scenario controls — triggers specific crowd dynamics */}
-      <ScenarioControls onScenarioChange={handleScenarioChange} />
+      {/* Scenario controls */}
+      <section aria-label="Crowd Scenario Controls">
+        <ScenarioControls onScenarioChange={handleScenarioChange} />
+      </section>
 
-      {/* Route controls — user picks start/end zones */}
-      <ControlPanel onRouteChange={handleRouteChange} />
+      {/* Route controls */}
+      <section aria-label="Routing Controls">
+        <ControlPanel onRouteChange={handleRouteChange} />
+      </section>
 
-      {/* Live heatmap grid — updates every 3s from simulation engine */}
-      <HeatmapGrid zones={zones} route={route} />
+      {/* Grid rendering entirely semantic constraints explicitly bypassing plain divs natively */}
+      <section aria-label="Live Venue Simulation Visualization">
+        <HeatmapGrid zones={zones} route={route} />
+        <RouteOverlay route={route} />
+      </section>
 
-      {/* Route overlay — shows recommended path from routing engine */}
-      <RouteOverlay route={route} />
+      <aside aria-label="Predictive Hazards Engine">
+        <PredictionsPanel predictions={predictions} />
+      </aside>
 
-      {/* Notification panel — shows nudge from nudge engine */}
-      <NotificationPanel
-        message={nudge}
-        history={nudgeHistory}
-      />
-    </div>
+      <aside aria-label="System Notifications">
+        <NotificationPanel message={nudge} history={nudgeHistory} />
+      </aside>
+    </main>
   );
 }
 

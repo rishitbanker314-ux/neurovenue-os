@@ -20,16 +20,20 @@ function ControlPanel({ onRouteChange }) {
             onChange={(e) => setStart(e.target.value)}
             placeholder="Start (e.g. A1)"
             maxLength={2}
+            aria-label="Starting Zone for Routing Calculation"
+            tabIndex={0}
           />
-          <span className="control-arrow">→</span>
+          <span className="control-arrow" aria-hidden="true">→</span>
           <input
             type="text"
             value={end}
             onChange={(e) => setEnd(e.target.value)}
             placeholder="End (e.g. E5)"
             maxLength={2}
+            aria-label="Destination Zone for Routing Calculation"
+            tabIndex={0}
           />
-          <button type="submit">Find Route</button>
+          <button type="submit" aria-label="Calculate Path" tabIndex={0}>Find Route</button>
         </div>
       </form>
     </div>

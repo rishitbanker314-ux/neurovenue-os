@@ -1283,6 +1283,27 @@
             :root { --panel-padding: 12px; }
             .kpi-grid { grid-template-columns: 1fr; }
         }
+        /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+           ACCESSIBILITY (a11y) HARDENING
+           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+        *:focus-visible {
+            outline: 4px solid var(--cyan-core) !important;
+            outline-offset: 4px !important;
+            border-radius: 4px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+            .alert-pulse, .glow-heatmap {
+                animation: none !important;
+                box-shadow: none !important;
+            }
+        }
     </style>
 </head>
 <body>
