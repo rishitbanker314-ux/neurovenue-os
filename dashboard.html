@@ -3521,6 +3521,15 @@
             ],
         });
 
+        // Force Basic Map Visual Marker (requested anchor)
+        new google.maps.Marker({
+            position: { lat: 23.0915, lng: 72.5970 },
+            map: gmap,
+            title: "Narendra Modi Stadium"
+        });
+
+        mapLoaded = true;
+
         // ── Build zone polygons (5×5 grid) ──
         GRID_ROWS.forEach((row, ri) => {
             GRID_COLS.forEach((col, ci) => {
