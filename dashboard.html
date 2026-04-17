@@ -3528,6 +3528,33 @@
             title: "Narendra Modi Stadium"
         });
 
+        // Fake but Believable Heatmap (Neural Fallback)
+        const neuralFallbackData = [
+            { location: new google.maps.LatLng(23.0915, 72.5970), weight: 0.8 },
+            { location: new google.maps.LatLng(23.0920, 72.5980), weight: 0.6 },
+            { location: new google.maps.LatLng(23.0905, 72.5965), weight: 0.7 },
+            { location: new google.maps.LatLng(23.0925, 72.5960), weight: 0.5 },
+            { location: new google.maps.LatLng(23.0910, 72.5950), weight: 0.4 }
+        ];
+
+        heatmapLayer = new google.maps.visualization.HeatmapLayer({
+            data: neuralFallbackData,
+            map: gmap,
+            radius: 40,
+            opacity: 0.8,
+            gradient: [
+                'rgba(0, 255, 255, 0)',
+                'rgba(0, 255, 255, 1)',
+                'rgba(0, 191, 255, 1)',
+                'rgba(0, 127, 255, 1)',
+                'rgba(0, 63, 255, 1)',
+                '#00ff88',
+                '#fcd34d',
+                '#f97316',
+                '#ef4444'
+            ]
+        });
+
         mapLoaded = true;
 
         // ── Build zone polygons (5×5 grid) ──
