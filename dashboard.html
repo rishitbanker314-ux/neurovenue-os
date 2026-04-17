@@ -3428,10 +3428,8 @@
     <script>
     // ─── Stadium geography ────────────────────────────────────────────────────
     // Narendra Modi Stadium, Motera, Ahmedabad
-    // Center: 23.09096° N, 72.08518° E
-    // The 5×5 grid spans ~360m × ~360m centred on the playing field.
-    // Each cell is ~72m × ~72m  (approx 0.000647° lat × 0.000817° lng)
-    const STADIUM_CENTER  = { lat: 23.09096, lng: 72.08518 };
+    // Center: 23.0915° N, 72.5970° E
+    const STADIUM_CENTER  = { lat: 23.0915, lng: 72.5970 };
     const CELL_LAT        = 0.000647;   // height of one 5×5 grid cell in degrees
     const CELL_LNG        = 0.000817;   // width  of one 5×5 grid cell in degrees
     const GRID_ROWS       = ['A','B','C','D','E'];
@@ -3443,16 +3441,16 @@
 
     // Gate & exit positions (real world GPS anchors inside Narendra Modi Stadium)
     const GATE_MARKERS = [
-        { id: 'Gate A (North)', lat: 23.09320, lng: 72.08518, zone: 'A3', type: 'gate' },
-        { id: 'Gate B (NE)',    lat: 23.09264, lng: 72.08720, zone: 'A5', type: 'gate' },
-        { id: 'Gate C (East)',  lat: 23.09096, lng: 72.08805, zone: 'C5', type: 'exit' },
-        { id: 'Gate D (SE)',    lat: 23.08925, lng: 72.08720, zone: 'E5', type: 'gate' },
-        { id: 'Gate E (South)', lat: 23.08870, lng: 72.08518, zone: 'E3', type: 'gate' },
-        { id: 'Gate F (SW)',    lat: 23.08925, lng: 72.08316, zone: 'E1', type: 'gate' },
-        { id: 'Gate G (West)',  lat: 23.09096, lng: 72.08231, zone: 'C1', type: 'exit' },
-        { id: 'Gate H (NW)',    lat: 23.09264, lng: 72.08316, zone: 'A1', type: 'gate' },
-        { id: 'Players Tunnel', lat: 23.09096, lng: 72.08518, zone: 'C3', type: 'poi' },
-        { id: 'Media Centre',  lat: 23.09200, lng: 72.08600, zone: 'B4', type: 'poi' },
+        { id: 'Gate A (North)', lat: 23.09374, lng: 72.59700, zone: 'A3', type: 'gate' },
+        { id: 'Gate B (NE)',    lat: 23.09318, lng: 72.59902, zone: 'A5', type: 'gate' },
+        { id: 'Gate C (East)',  lat: 23.09150, lng: 72.59987, zone: 'C5', type: 'exit' },
+        { id: 'Gate D (SE)',    lat: 23.08979, lng: 72.59902, zone: 'E5', type: 'gate' },
+        { id: 'Gate E (South)', lat: 23.08924, lng: 72.59700, zone: 'E3', type: 'gate' },
+        { id: 'Gate F (SW)',    lat: 23.08979, lng: 72.59498, zone: 'E1', type: 'gate' },
+        { id: 'Gate G (West)',  lat: 23.09150, lng: 72.59413, zone: 'C1', type: 'exit' },
+        { id: 'Gate H (NW)',    lat: 23.09318, lng: 72.59498, zone: 'A1', type: 'gate' },
+        { id: 'Players Tunnel', lat: 23.09150, lng: 72.59700, zone: 'C3', type: 'poi' },
+        { id: 'Media Centre',  lat: 23.09254, lng: 72.59782, zone: 'B4', type: 'poi' },
     ];
 
     // ─── Map state ────────────────────────────────────────────────────────────
