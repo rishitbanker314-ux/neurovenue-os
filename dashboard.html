@@ -1754,31 +1754,11 @@
                 <!-- Map container -->
                 <div id="twin-map" style="position:relative;">
 
-                    <!-- Key entry notice (shown until key is set) -->
-                    <div class="map-key-notice" id="map-key-notice">
-                        <div class="notice-icon">🗺️</div>
-                        <h3>Google Maps API Key Required</h3>
-                        <p>
-                            To render the Narendra Modi Stadium digital twin, enter your
-                            Google Maps JavaScript API key below. The key needs
-                            <strong>Maps JavaScript API</strong>, <strong>Visualization API</strong>,
-                            and <strong>Places API</strong> enabled.
-                            It is stored only in your browser session.
-                        </p>
-                        <div class="map-key-input-row">
-                            <input
-                                type="text"
-                                class="map-key-input"
-                                id="maps-api-key-input"
-                                placeholder="AIza..."
-                            />
-                            <button class="map-key-btn" onclick="initMapsWithKey()">LOAD MAP</button>
-                        </div>
-                        <p style="font-size:10px; color: var(--text-dim); margin-top: 4px;">
-                            Or set <code style="color:var(--cyan-core);">MAPS_API_KEY</code> query param in the URL:
-                            <code style="color:var(--text-secondary);">?maps_key=AIza...</code>
-                        </p>
-                    </div>
+                    <!-- API Key Injected via Backend on page load -->
+                    <script>
+                        // Placeholder replaced by server.py at runtime
+                        const INJECTED_MAPS_KEY = "[[MAPS_API_KEY]]";
+                    </script>
 
                     <!-- Floating overlay stats on top of map -->
                     <div class="map-overlay-stats" id="map-overlay-stats" style="display:none;">
@@ -3411,11 +3391,17 @@
                 }
             }, 600);
 
-            // Auto-load from URL param if present
-            const urlKey = new URLSearchParams(window.location.search).get('maps_key');
-            if (urlKey) {
-                document.getElementById('maps-api-key-input').value = urlKey;
-                initMapsWithKey();
+            // Auto-load Injected Key if present
+            if (typeof INJECTED_MAPS_KEY !== 'undefined' && INJECTED_MAPS_KEY.startsWith('AIza')) {
+                addLog('info', 'Secure API Key injected from environment. Re-routing twin logic...');
+                initMapsWithKey(INJECTED_MAPS_KEY);
+            } else {
+                // Auto-load from URL param as fallback
+                const urlKey = new URLSearchParams(window.location.search).get('maps_key');
+                if (urlKey) {
+                    addLog('info', 'API Key detected in URL parameters...');
+                    initMapsWithKey(urlKey);
+                }
             }
         }
 
@@ -3793,16 +3779,17 @@
     }
 
     // ─── Maps API loader ──────────────────────────────────────────────────────
-    function initMapsWithKey() {
-        const key = document.getElementById('maps-api-key-input').value.trim();
+    function initMapsWithKey(providedKey = null) {
+        const key = providedKey || sessionStorage.getItem('nv_maps_key');
+
         if (!key || !key.startsWith('AIza')) {
-            document.getElementById('maps-api-key-input').style.borderColor = '#ef4444';
-            addLog('error', 'Invalid Maps API key — must start with AIza...');
+            addLog('warn', 'No valid Google Maps API Key detected. Please provide one via environment or URL.');
             return;
         }
 
-        document.getElementById('maps-api-key-input').style.borderColor = '';
-        sessionStorage.setItem('nv_maps_key', key);
+        // Show stats once loading starts
+        const stats = document.getElementById('map-overlay-stats');
+        if (stats) stats.style.display = 'flex';
 
         // Load Maps JS API dynamically
         const script = document.createElement('script');
@@ -3810,11 +3797,10 @@
         script.async = true;
         script.onerror = () => {
             addLog('error', 'Failed to load Google Maps — check your API key and billing account.');
-            document.getElementById('maps-api-key-input').style.borderColor = '#ef4444';
         };
         document.head.appendChild(script);
 
-        addLog('info', `Loading Google Maps JS API for Narendra Modi Stadium...`);
+        addLog('info', `Initializing Google Maps Digital Twin...`);
     }
 
     // ─── Hook into the existing fetchData cycle ───────────────────────────────

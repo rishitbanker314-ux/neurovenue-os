@@ -146,8 +146,19 @@ logger.info(
 
 @app.route("/")
 def index():
-    """Serve the dashboard HTML."""
-    return send_file("dashboard.html")
+    """Serve the dashboard HTML with injected environment variables."""
+    try:
+        with open("dashboard.html", "r") as f:
+            html = f.read()
+        
+        # Inject Google Maps API Key from environment
+        maps_key = os.environ.get("MAPS_API_KEY", "")
+        html = html.replace("[[MAPS_API_KEY]]", maps_key)
+        
+        return html, 200, {"Content-Type": "text/html"}
+    except Exception as e:
+        logger.error(f"Failed to serve dashboard: {str(e)}")
+        return f"System Error: {str(e)}", 500
 
 
 @app.route("/api/state")
