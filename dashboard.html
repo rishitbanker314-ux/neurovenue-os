@@ -483,6 +483,23 @@
             padding: 0 var(--panel-padding) var(--panel-padding);
         }
 
+        .panel {
+            background: rgba(18, 14, 30, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: var(--panel-gap);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(12px);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+        }
+
+        .panel:hover {
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
         .heatmap-cell {
             aspect-ratio: 1;
             border-radius: 4px;
@@ -743,11 +760,40 @@
             animation: brainPulse 2s infinite;
         }
 
-        .canvas-ai-decision .ai-content {
-            font-size: 13px;
-            line-height: 1.5;
-            color: #fff;
             font-weight: 500;
+        }
+
+        .canvas-ai-decision .ai-expl {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+        
+        .canvas-ai-decision .ai-factors {
+            font-size: 10px;
+            color: var(--cyan-core);
+            margin-top: 6px;
+            padding-left: 12px;
+            list-style: none;
+        }
+
+        .canvas-ai-decision .ai-factors li::before {
+            content: "•";
+            color: var(--pink-core);
+            font-weight: bold;
+            display: inline-block; 
+            width: 1em;
+            margin-left: -1em;
+        }
+
+        .canvas-ai-decision .ai-conf {
+            margin-top: 8px;
+            font-size: 10px;
+            font-weight: bold;
+            text-align: right;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 6px;
         }
 
         /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -999,52 +1045,82 @@
             box-shadow: 0 0 14px var(--blue-glow);
         }
 
-        /* ─ Nudges Panel ─ */
-        .nudges-section {
+        /* ─ Command Panel ─ */
+        .cmd-section {
             flex: 1;
-            overflow: hidden;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
-        .nudge-list {
+        .cmd-interface {
+            display: flex;
+            flex-direction: column;
+            padding: 0 var(--panel-padding) var(--panel-padding);
+            height: 100%;
+            gap: 10px;
+            overflow: hidden;
+        }
+
+        .cmd-history {
             flex: 1;
             overflow-y: auto;
-            padding: 0 var(--panel-padding) var(--panel-padding);
+            background: rgba(0,0,0,0.3);
+            border-radius: 6px;
+            padding: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
             display: flex;
             flex-direction: column;
             gap: 4px;
         }
 
-        .nudge-list::-webkit-scrollbar { width: 3px; }
-        .nudge-list::-webkit-scrollbar-thumb { background: var(--text-dim); border-radius: 3px; }
+        .cmd-history::-webkit-scrollbar { width: 3px; }
+        .cmd-history::-webkit-scrollbar-thumb { background: var(--text-dim); border-radius: 3px; }
 
-        .nudge-item {
-            padding: 10px 12px;
-            border-radius: 8px;
-            background: rgba(255,255,255, 0.015);
-            border: 1px solid var(--border-dim);
-            font-size: 11px;
-            line-height: 1.5;
-            color: var(--text-secondary);
-            animation: nudgeSlideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            transition: all 0.3s;
+        .cmd-line { word-break: break-all; animation: cmdFadeIn 0.2s ease-out; }
+        .cmd-line.system { color: var(--text-muted); font-style: italic; }
+        .cmd-line.user { color: var(--cyan-core); font-weight: 600; }
+        .cmd-line.action { color: var(--green-core); }
+        .cmd-line.impact { color: var(--orange-core); margin-left: 10px; }
+        .cmd-line.error { color: var(--red-core); }
+
+        .cmd-input-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-active);
+            border-radius: 6px;
+            padding: 6px 10px;
+            flex-shrink: 0;
         }
-
-        .nudge-item:hover {
-            border-color: var(--border-subtle);
-        }
-
-        .nudge-time {
-            font-size: 10px;
-            color: var(--text-dim);
-            margin-top: 4px;
+        
+        .cmd-prompt {
+            color: var(--cyan-core);
             font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 11px;
+        }
+        
+        .cmd-input-row input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            outline: none;
+        }
+        
+        .cmd-input-row:focus-within {
+            border-color: var(--cyan-core);
+            box-shadow: 0 0 0 2px rgba(0,212,255,0.1);
         }
 
-        @keyframes nudgeSlideIn {
-            from { opacity: 0; transform: translateX(16px); }
-            to { opacity: 1; transform: translateX(0); }
+        @keyframes cmdFadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1247,6 +1323,196 @@
         }
 
         /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+           GOOGLE MAPS DIGITAL TWIN
+           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+        .map-twin-container {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .map-twin-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px var(--panel-padding);
+            border-bottom: 1px solid var(--border-dim);
+            flex-shrink: 0;
+            z-index: 2;
+            background: var(--bg-glass);
+        }
+
+        .map-twin-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--cyan-core);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .map-twin-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: rgba(0, 212, 255, 0.08);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            color: var(--cyan-core);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .map-twin-legend {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .map-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 9px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .map-legend-swatch {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+        }
+
+        #twin-map {
+            flex: 1;
+            position: relative;
+        }
+
+        /* Map API key notice */
+        .map-key-notice {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(5, 8, 16, 0.95);
+            z-index: 100;
+            gap: 16px;
+            padding: 32px;
+            text-align: center;
+        }
+
+        .map-key-notice .notice-icon { font-size: 40px; }
+
+        .map-key-notice h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            color: var(--cyan-core);
+            letter-spacing: 2px;
+        }
+
+        .map-key-notice p {
+            font-size: 12px;
+            color: var(--text-secondary);
+            max-width: 380px;
+            line-height: 1.7;
+        }
+
+        .map-key-input-row {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .map-key-input {
+            flex: 1;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border-active);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            outline: none;
+        }
+
+        .map-key-input:focus {
+            border-color: var(--cyan-core);
+            box-shadow: 0 0 0 3px rgba(0,212,255,0.1);
+        }
+
+        .map-key-btn {
+            background: linear-gradient(135deg, var(--blue-core), var(--cyan-core));
+            border: none;
+            border-radius: 8px;
+            padding: 10px 18px;
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: opacity 0.2s;
+        }
+
+        .map-key-btn:hover { opacity: 0.85; }
+
+        /* Floating overlays on the map */
+        .map-overlay-stats {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .map-overlay-stat {
+            padding: 5px 10px;
+            border-radius: 6px;
+            background: rgba(5, 8, 16, 0.88);
+            border: 1px solid var(--border-dim);
+            backdrop-filter: blur(8px);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .map-overlay-stat .lbl { color: var(--text-muted); }
+        .map-overlay-stat .val { color: var(--text-primary); font-weight: 700; }
+
+        .map-phase-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            background: rgba(79,110,247,0.15);
+            border: 1px solid rgba(79,110,247,0.3);
+            color: var(--blue-bright);
+            backdrop-filter: blur(8px);
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
            RESPONSIVE
            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
         @media (max-width: 1200px) {
@@ -1304,6 +1570,56 @@
                 box-shadow: none !important;
             }
         }
+        /* ─ What-If Modal ─ */
+        .whatif-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: none; justify-content: center; align-items: center;
+            z-index: 9999;
+        }
+        .whatif-modal {
+            background: rgba(15, 20, 25, 0.95);
+            border: 1px solid var(--border-active);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.1);
+            border-radius: 12px;
+            width: 600px;
+            max-width: 90%;
+            display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+        .whatif-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-dim);
+            display: flex; justify-content: space-between; align-items: center;
+            font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: bold; color: var(--cyan-core);
+        }
+        .whatif-close { cursor: pointer; color: var(--text-muted); font-size: 16px; }
+        .whatif-close:hover { color: var(--red-core); }
+        .whatif-body { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+        
+        .whatif-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .whatif-control-group { display: flex; flex-direction: column; gap: 8px; }
+        .whatif-control-group label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; }
+        .whatif-control-group select, .whatif-control-group input[type="range"] {
+            background: rgba(0,0,0,0.3); border: 1px solid var(--border-dim); color: var(--text-primary);
+            padding: 8px; border-radius: 6px; font-family: 'Inter', sans-serif;
+        }
+        
+        .whatif-run-btn {
+            background: var(--cyan-core); color: #000; font-weight: bold; padding: 12px; border: none; border-radius: 6px; cursor: pointer;
+            font-family: 'JetBrains Mono', monospace; transition: all 0.2s;
+        }
+        .whatif-run-btn:hover { box-shadow: 0 0 15px var(--cyan-core); }
+        
+        .whatif-results { display: none; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; border-top: 1px solid var(--border-dim); padding-top: 20px; }
+        .whatif-result-card { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid var(--border-dim); }
+        .whatif-result-title { font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; }
+        .whatif-result-value { font-size: 18px; font-weight: bold; color: var(--text-primary); display: flex; flex-direction: column; gap: 5px; }
+        .whatif-result-delta { font-size: 12px; font-weight: normal; }
+        
+        .whatif-result-delta.pos { color: var(--red-core); }
+        .whatif-result-delta.neg { color: var(--green-core); }
     </style>
 </head>
 <body>
@@ -1417,35 +1733,92 @@
             </div>
         </div>
 
-        <!-- ━━━ CENTER — SIMULATION ━━━ -->
+        <!-- ━━━ CENTER — GOOGLE MAPS DIGITAL TWIN ━━━ -->
         <div class="center-panel panel">
-            <div class="simulation-container">
-                <div class="sim-header">
-                    <div class="sim-title">
-                        <span class="dot" style="background: var(--green-core);"></span>
-                        CROWD SIMULATION — LIVE
+            <div class="map-twin-container">
+                <div class="map-twin-header">
+                    <div class="map-twin-title">
+                        <span class="dot" style="background: var(--cyan-core); box-shadow: 0 0 10px rgba(0,212,255,0.8);"></span>
+                        Real-Time Digital Twin of Narendra Modi Stadium
                     </div>
-                    <div class="sim-legend">
-                        <div class="sim-legend-item"><div class="sim-legend-dot" style="background: var(--green-dim);"></div>Low</div>
-                        <div class="sim-legend-item"><div class="sim-legend-dot" style="background: var(--yellow-core);"></div>Med</div>
-                        <div class="sim-legend-item"><div class="sim-legend-dot" style="background: var(--orange-core);"></div>High</div>
-                        <div class="sim-legend-item"><div class="sim-legend-dot" style="background: var(--red-core);"></div>Crit</div>
-                        <div class="sim-legend-item"><div class="sim-legend-dot" style="background: var(--path-color);"></div>Route</div>
+                    <div class="map-twin-legend">
+                        <div class="map-legend-item"><div class="map-legend-swatch" style="background:#00ff88;"></div>Low</div>
+                        <div class="map-legend-item"><div class="map-legend-swatch" style="background:#fbbf24;"></div>Med</div>
+                        <div class="map-legend-item"><div class="map-legend-swatch" style="background:#f97316;"></div>High</div>
+                        <div class="map-legend-item"><div class="map-legend-swatch" style="background:#ef4444;"></div>Crit</div>
+                        <div class="map-legend-item"><div class="map-legend-swatch" style="background:#818cf8;"></div>Route</div>
+                        <div class="map-twin-badge" id="twin-update-badge">SYNCING...</div>
                     </div>
                 </div>
-                <div class="canvas-wrapper">
-                    <canvas id="sim-canvas"></canvas>
-                    <div class="canvas-overlay-stats">
-                        <div class="overlay-stat"><span class="label">AGENTS:</span><span class="val" id="overlay-agents">0</span></div>
-                        <div class="overlay-stat"><span class="label">TIME SAVED:</span><span class="val" id="overlay-time-saved">0s</span></div>
+
+                <!-- Map container -->
+                <div id="twin-map" style="position:relative;">
+
+                    <!-- Key entry notice (shown until key is set) -->
+                    <div class="map-key-notice" id="map-key-notice">
+                        <div class="notice-icon">🗺️</div>
+                        <h3>Google Maps API Key Required</h3>
+                        <p>
+                            To render the Narendra Modi Stadium digital twin, enter your
+                            Google Maps JavaScript API key below. The key needs
+                            <strong>Maps JavaScript API</strong>, <strong>Visualization API</strong>,
+                            and <strong>Places API</strong> enabled.
+                            It is stored only in your browser session.
+                        </p>
+                        <div class="map-key-input-row">
+                            <input
+                                type="text"
+                                class="map-key-input"
+                                id="maps-api-key-input"
+                                placeholder="AIza..."
+                            />
+                            <button class="map-key-btn" onclick="initMapsWithKey()">LOAD MAP</button>
+                        </div>
+                        <p style="font-size:10px; color: var(--text-dim); margin-top: 4px;">
+                            Or set <code style="color:var(--cyan-core);">MAPS_API_KEY</code> query param in the URL:
+                            <code style="color:var(--text-secondary);">?maps_key=AIza...</code>
+                        </p>
                     </div>
-                    <div class="canvas-ai-decision" id="ai-decision-box">
+
+                    <!-- Floating overlay stats on top of map -->
+                    <div class="map-overlay-stats" id="map-overlay-stats" style="display:none;">
+                        <div class="map-overlay-stat">
+                            <span class="lbl">STADIUM:</span>
+                            <span class="val">Narendra Modi, Ahmedabad</span>
+                        </div>
+                        <div class="map-overlay-stat">
+                            <span class="lbl">CAPACITY:</span>
+                            <span class="val">132,000</span>
+                        </div>
+                        <div class="map-overlay-stat">
+                            <span class="lbl">AGENTS:</span>
+                            <span class="val" id="overlay-agents">0</span>
+                        </div>
+                        <div class="map-overlay-stat">
+                            <span class="lbl">TIME SAVED:</span>
+                            <span class="val" id="overlay-time-saved">0s</span>
+                        </div>
+                    </div>
+
+                    <div class="map-phase-badge" id="map-phase-badge" style="display:none;">INITIALIZING</div>
+
+                    <!-- AI decision box (reused on map) -->
+                    <div class="canvas-ai-decision" id="ai-decision-box" style="display:none;">
                         <div class="ai-header">
                             <span class="ai-icon">🧠</span>
                             AI TACTICAL DECISION
                         </div>
                         <div class="ai-content" id="ai-decision-text">
                             Analyzing venue topology and flow rates...
+                        </div>
+                        <div class="ai-expl" id="ai-decision-expl">
+                            Initializing shadow model evaluation constraints.
+                        </div>
+                        <ul class="ai-factors" id="ai-decision-factors">
+                            <li>Building spatial node graphs</li>
+                        </ul>
+                        <div class="ai-conf" id="ai-decision-conf" style="color: var(--text-secondary);">
+                            Confidence: 0%
                         </div>
                     </div>
                 </div>
@@ -1462,6 +1835,7 @@
                     <button class="scenario-btn" id="btn-entry" onclick="setScenario('entry')">🚪 Entry Rush</button>
                     <button class="scenario-btn" id="btn-halftime" onclick="setScenario('halftime')">⏸ Halftime</button>
                     <button class="scenario-btn danger" id="btn-emergency" onclick="setScenario('emergency')">🚨 Evacuate</button>
+                    <button class="scenario-btn" id="btn-whatif" onclick="openWhatIfModal()" style="grid-column: span 2; background: rgba(0,212,255,0.05); border-color: var(--cyan-core); color: var(--cyan-core);">🧪 What-If Analysis</button>
                 </div>
             </div>
 
@@ -1521,10 +1895,18 @@
                 </div>
             </div>
 
-            <!-- AI Nudges -->
-            <div class="panel nudges-section">
-                <div class="panel-title"><span class="dot" style="background: var(--cyan-core);"></span>AI NUDGES</div>
-                <div class="nudge-list" id="nudge-list"></div>
+            <!-- AI Command Engine -->
+            <div class="panel cmd-section">
+                <div class="panel-title"><span class="dot" style="background: var(--cyan-core);"></span>AI COMMAND ENGINE</div>
+                <div class="cmd-interface">
+                    <div class="cmd-history" id="cmd-history">
+                        <div class="cmd-line system">Waiting for execution directive...</div>
+                    </div>
+                    <div class="cmd-input-row">
+                        <span class="cmd-prompt">_&gt;</span>
+                        <input type="text" id="ai-cmd-input" placeholder="Execute system command..." onkeypress="handleCommandKeyPress(event)" />
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1805,18 +2187,67 @@
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  NUDGES
+        //  AI COMMAND INTERFACE
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        function addNudge(nudgeText) {
-            if (nudgeText === prevNudgeText) return;
-            prevNudgeText = nudgeText;
-            const time = new Date().toLocaleTimeString('en-US', { hour12: false });
-            nudges.unshift({ text: nudgeText, time });
-            if (nudges.length > MAX_NUDGES) nudges.pop();
-
-            document.getElementById('nudge-list').innerHTML = nudges.map(n => `
-                <div class="nudge-item">${n.text}<div class="nudge-time">${n.time}</div></div>
-            `).join('');
+        async function handleCommandKeyPress(event) {
+            if (event.key === 'Enter') {
+                const inputEl = document.getElementById('ai-cmd-input');
+                const cmd = inputEl.value.trim();
+                if (!cmd) return;
+                
+                inputEl.value = '';
+                inputEl.disabled = true;
+                appendCmdLine('user', `> ${cmd}`);
+                
+                const loaderId = appendCmdLine('system', `SYS: Executing command...`);
+                
+                try {
+                    const response = await fetch('/api/command', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ command: cmd })
+                    });
+                    
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    
+                    const data = await response.json();
+                    
+                    // Remove loader
+                    const loader = document.getElementById(loaderId);
+                    if (loader) loader.remove();
+                    
+                    if (data.status === 'executed') {
+                        appendCmdLine('action', `[EXEC] ${data.action}`);
+                        appendCmdLine('impact', `Impact: ${data.numeric_impact}`);
+                        addLog('ai', `Cmd executed: ${cmd}`);
+                        fetchData(); // Force refresh to show immediate impact
+                    } else if (data.status === 'unrecognized') {
+                        appendCmdLine('system', `SYS: ${data.action}`);
+                    } else {
+                        appendCmdLine('error', `[ERR] ${data.action}`);
+                    }
+                } catch (err) {
+                    const loader = document.getElementById(loaderId);
+                    if (loader) loader.remove();
+                    appendCmdLine('error', `[ERR] Network communication failed: ${err.message}`);
+                    showToast("Command engine offline.");
+                } finally {
+                    inputEl.disabled = false;
+                    inputEl.focus();
+                }
+            }
+        }
+        
+        function appendCmdLine(type, text) {
+            const hist = document.getElementById('cmd-history');
+            const row = document.createElement('div');
+            const uid = 'cmd-' + Math.random().toString(36).substr(2, 9);
+            row.id = uid;
+            row.className = `cmd-line ${type}`;
+            row.textContent = text;
+            hist.appendChild(row);
+            hist.scrollTop = hist.scrollHeight;
+            return uid;
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1876,6 +2307,76 @@
                 toast.classList.add('toast-exit');
                 setTimeout(() => toast.remove(), 350);
             }, 4000);
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  WHAT-IF ENGINE LOGIC
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function openWhatIfModal() {
+            document.getElementById('whatif-modal').style.display = 'flex';
+            document.getElementById('wi-results').style.display = 'none';
+        }
+        
+        function closeWhatIfModal() {
+            document.getElementById('whatif-modal').style.display = 'none';
+        }
+        
+        async function runWhatIf() {
+            const btn = document.getElementById('wi-run-btn');
+            btn.textContent = '⏳ RUNNING PARALLEL SIMULATION...';
+            btn.style.opacity = '0.5';
+            
+            const crowdDelta = parseInt(document.getElementById('wi-crowd').value) || 0;
+            const phase = document.getElementById('wi-phase').value;
+            const gatesSelect = document.getElementById('wi-gates');
+            const closeGates = Array.from(gatesSelect.selectedOptions).map(opt => opt.value);
+            
+            try {
+                const response = await fetch('/api/whatif', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ crowd_delta: crowdDelta, close_gates: closeGates, phase })
+                });
+                const data = await response.json();
+                
+                // Display Results
+                document.getElementById('wi-results').style.display = 'grid';
+                
+                // Peak Congestion
+                const cong = data.scenario.peak_congestion;
+                const dCong = data.delta.peak_congestion_diff;
+                document.getElementById('wi-res-cong').textContent = `${cong.toFixed(1)}%`;
+                const elCong = document.getElementById('wi-delta-cong');
+                elCong.textContent = (dCong >= 0 ? `▲ +${dCong.toFixed(1)}%` : `▼ ${dCong.toFixed(1)}%`) + " vs Baseline";
+                elCong.className = `whatif-result-delta ${dCong > 0 ? 'pos' : (dCong < 0 ? 'neg' : '')}`;
+                
+                // Wait Time
+                const wait = data.scenario.avg_wait;
+                const dWait = data.delta.avg_wait_diff;
+                document.getElementById('wi-res-wait').textContent = `${wait.toFixed(1)}s`;
+                const elWait = document.getElementById('wi-delta-wait');
+                elWait.textContent = (dWait >= 0 ? `▲ +${dWait.toFixed(1)}s` : `▼ ${dWait.toFixed(1)}s`) + " vs Baseline";
+                elWait.className = `whatif-result-delta ${dWait > 0 ? 'pos' : (dWait < 0 ? 'neg' : '')}`;
+                
+                // Agents
+                const agents = data.scenario.active_agents;
+                const dAgents = data.delta.active_agents_diff;
+                document.getElementById('wi-res-agents').textContent = `${agents}`;
+                const elAgents = document.getElementById('wi-delta-agents');
+                elAgents.textContent = (dAgents >= 0 ? `▲ +${dAgents}` : `▼ ${dAgents}`) + " vs Baseline";
+                elAgents.className = `whatif-result-delta ${dAgents > 0 ? 'pos' : (dAgents < 0 ? 'neg' : '')}`;
+                
+                addLog('info', `What-If Scenario executed. Delta: ${Math.abs(dCong).toFixed(1)}% congestion shift.`);
+                showToast("Parallel simulation complete.");
+            } catch (err) {
+                console.error(err);
+                showToast("Failed to run What-If Simulation Engine.");
+                addLog('error', `Simulation abort: ${err.message}`);
+            } finally {
+                btn.textContent = '▶ EXECUTE PARALLEL PREDICTION';
+                btn.style.opacity = '1';
+                btn.disabled = false;
+            }
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2354,15 +2855,21 @@
                         }
                         ctx.fillRect(x + 1, y + 1, cellW - 2, cellH - 2);
 
-                        // Critical zone border glow
+                        // Critical zone border glow & Text Alert
                         if (d > 80 || isPredictedRisk) {
                             if (isPredictedRisk) {
                                 ctx.strokeStyle = `rgba(249, 115, 22, ${0.4 + Math.sin(frameCount * 0.1) * 0.2})`;
                             } else {
                                 ctx.strokeStyle = `rgba(239, 68, 68, ${0.2 + Math.sin(frameCount * 0.08) * 0.15})`;
                             }
-                            ctx.lineWidth = 2;
+                            ctx.lineWidth = 3;
                             ctx.strokeRect(x + 2, y + 2, cellW - 4, cellH - 4);
+                            
+                            // Draw "CRITICAL RISK" label centered in block
+                            ctx.fillStyle = `rgba(255, 255, 255, ${0.6 + Math.sin(frameCount * 0.1) * 0.4})`;
+                            ctx.font = 'bold 11px Inter';
+                            ctx.textAlign = 'center';
+                            ctx.fillText(isPredictedRisk ? "PREDICTED RISK" : "CRITICAL RISK", x + cellW / 2, y + cellH / 2);
                         }
                     }
                 });
@@ -2694,6 +3201,8 @@
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         //  FETCH DATA
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        let previousZoneData = [];
+        
         async function fetchData() {
             try {
                 const start = document.getElementById('route-start').value.toUpperCase();
@@ -2717,9 +3226,27 @@
                 updateRoute(data.route);
 
                 // Log && Alert Sound Logic
+                let surgeDetected = false;
+                
+                data.zones.forEach(z => {
+                    const prevZ = previousZoneData.find(p => p.id === z.id);
+                    if (prevZ) {
+                        const surge = z.density - prevZ.density;
+                        if (surge >= 15) {
+                            addLog('warn', `Rapid density surge: Zone ${z.id} spiked +${Math.round(surge)}%`);
+                            showToast(`⚠️ WARNING: Surge at Zone ${z.id}!`);
+                            surgeDetected = true;
+                        }
+                    }
+                });
+                
+                previousZoneData = JSON.parse(JSON.stringify(data.zones));
+
                 const hotZones = data.zones.filter(z => z.density > 80);
-                if (hotZones.length > 0) {
-                    addLog('warn', `${hotZones.length} zone(s) critical density: ${hotZones.map(z => z.id).join(', ')}`);
+                if (hotZones.length > 0 || surgeDetected) {
+                    if (hotZones.length > 0) {
+                        addLog('warn', `${hotZones.length} zone(s) critical density: ${hotZones.map(z => z.id).join(', ')}`);
+                    }
                     if (!isAlerting) {
                         playAlertSound();
                         isAlerting = true;
@@ -2736,78 +3263,88 @@
                     addLog('route', `Route: ${data.route.path.join(' → ')} | Saved ${data.route.time_saved}s`);
                 }
 
-                // Nudge
-                const nudgeFirstLine = data.nudge.split('\n')[0];
-                addNudge(data.nudge.replace(/\n/g, '<br>'));
-
-                if (data.tick % 3 === 0) {
-                    showToast(nudgeFirstLine);
-                    addLog('ai', `Nudge: ${nudgeFirstLine}`);
+                // AI Decision Box Integration
+                if (data.nudge && typeof data.nudge === 'object') {
+                    updateAiDecisionBox(data.nudge);
+                } else if (data.nudge) {
+                    updateAiDecisionBox({action: data.nudge.split('\n')[0]}); // Fallback
                 }
+                
+                // Keep Live indicator green
+                document.querySelector('.status-dot-live').style.background = 'var(--green-core)';
+                document.querySelector('.status-dot-live').style.boxShadow = '0 0 8px var(--green-core)';
+                document.querySelector('.status-text').textContent = 'LIVE';
 
             } catch (err) {
                 console.error('Fetch error:', err);
                 document.getElementById('phase-badge').textContent = 'DISCONNECTED';
                 addLog('error', `Connection lost: ${err.message}`);
+                
+                // Show Disconnected system status
+                document.querySelector('.status-dot-live').style.background = 'var(--red-core)';
+                document.querySelector('.status-dot-live').style.boxShadow = '0 0 8px var(--red-core)';
+                document.querySelector('.status-text').textContent = 'OFFLINE';
             }
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         //  AI DECISION ENGINE
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        const ADVICE_TEMPLATES = [
-            "Redirect Gate {start} traffic to {end} to ease {high} congestion.",
-            "Open auxiliary exit near {high} to disperse crowd.",
-            "Hold {start} flow for 30s to clear {high} bottleneck.",
-            "Dispatch staff to {high} — density exceeds critical threshold.",
-            "Reroute {start} → {middle} → {end} to balance load.",
-            "Increase throughput at {end} — {high} is spilling over.",
-            "Deploy mobile concessions near {low} to draw crowd from {high}."
-        ];
-
-        function generateAiDecision() {
-            // Find highest and lowest density zones
-            let maxDensity = -1;
-            let minDensity = 101;
-            let maxZone = 'C3';
-            let minZone = 'A1';
-
-            for (const z in zoneDensity) {
-                if (zoneDensity[z] > maxDensity) {
-                    maxDensity = zoneDensity[z];
-                    maxZone = z;
-                }
-                if (zoneDensity[z] < minDensity && zoneDensity[z] > 0) {
-                    minDensity = zoneDensity[z];
-                    minZone = z;
-                }
-            }
-
-            const template = ADVICE_TEMPLATES[Math.floor(Math.random() * ADVICE_TEMPLATES.length)];
-            const zonesList = Object.keys(zoneDensity);
-            const rZone = () => zonesList[Math.floor(Math.random() * zonesList.length)] || 'C3';
-            
-            let advice = template
-                .replace(/{start}/g, Math.random() > 0.5 ? 'A1' : 'A5')
-                .replace(/{end}/g, Math.random() > 0.5 ? 'E1' : 'E5')
-                .replace(/{middle}/g, rZone())
-                .replace(/{high}/g, maxZone)
-                .replace(/{low}/g, minZone);
-                
-            return advice;
-        }
-
-        function updateAiDecisionBox() {
+        function updateAiDecisionBox(nudgeData) {
             const box = document.getElementById('ai-decision-box');
             const text = document.getElementById('ai-decision-text');
+            const expl = document.getElementById('ai-decision-expl');
+            const factors = document.getElementById('ai-decision-factors');
+            const conf = document.getElementById('ai-decision-conf');
             
             if (!box || !text) return;
+            const actionText = nudgeData.action || '';
+            if (text.textContent === actionText) return;
             
             box.classList.add('updating');
+            
+            if (actionText.includes("TACTICAL ALERT:")) {
+                box.style.borderColor = "var(--red-core)";
+                box.style.boxShadow = "0 0 15px rgba(239, 68, 68, 0.4)";
+                text.style.color = "var(--red-core)";
+            } else {
+                box.style.borderColor = "rgba(255,255,255,0.1)";
+                box.style.boxShadow = "none";
+                text.style.color = "var(--cyan-core)";
+            }
+
             setTimeout(() => {
-                text.textContent = generateAiDecision();
+                text.textContent = actionText;
+                
+                if (expl && nudgeData.explanation) {
+                    expl.textContent = nudgeData.explanation;
+                }
+                
+                if (factors && nudgeData.factors && Array.isArray(nudgeData.factors)) {
+                    factors.innerHTML = '';
+                    nudgeData.factors.forEach(f => {
+                        const li = document.createElement('li');
+                        li.textContent = f;
+                        factors.appendChild(li);
+                    });
+                }
+                
+                if (conf && nudgeData.confidence !== undefined) {
+                    conf.textContent = `Confidence: ${nudgeData.confidence}%`;
+                    if (nudgeData.confidence >= 90) {
+                        conf.style.color = "var(--green-core)";
+                    } else if (nudgeData.confidence >= 70) {
+                        conf.style.color = "var(--orange-core)";
+                    } else {
+                        conf.style.color = "var(--text-secondary)";
+                    }
+                }
+
                 box.classList.remove('updating');
-                addLog('ai', `Insight: ${text.textContent}`);
+                if (actionText.includes("TACTICAL ALERT:")) {
+                    addLog('ai', `Analysis: ${actionText}`);
+                    showToast(actionText);
+                }
             }, 300);
         }
 
@@ -2840,8 +3377,6 @@
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         function boot() {
             initHeatmap();
-            resizeCanvas();
-            initAgents(150);
 
             addLog('info', 'Subsystems initializing...');
             setTimeout(() => addLog('info', 'Crowd simulation engine online'), 300);
@@ -2852,16 +3387,14 @@
                 fetchData();
             }, 1200);
 
-            render();
             setInterval(fetchData, REFRESH_INTERVAL);
-            
-            setTimeout(updateAiDecisionBox, 3000);
-            setInterval(updateAiDecisionBox, 8000);
-            
+
+            // AI Decisions now triggered by API payload natively.
+
             // Real-time jitter effect
             setInterval(() => {
                 if (!lastZoneData || lastZoneData.length === 0) return;
-                
+
                 const flowEl = document.getElementById('analytics-flow');
                 let currentFlow = parseInt(flowEl.textContent) || 0;
                 if (currentFlow > 0 && Math.random() > 0.3) {
@@ -2869,7 +3402,7 @@
                     flowEl.textContent = `${newFlow} ppl/min`;
                     document.getElementById('bar-flow').style.width = `${Math.min(100, newFlow / 2)}%`;
                 }
-                
+
                 const speedEl = document.getElementById('stat-avg-speed');
                 let currentSpeed = parseFloat(speedEl.textContent) || 0;
                 if (currentSpeed > 0 && Math.random() > 0.3) {
@@ -2877,13 +3410,497 @@
                     speedEl.textContent = newSpeed;
                 }
             }, 600);
-        }
 
-        window.addEventListener('resize', () => {
-            resizeCanvas();
-        });
+            // Auto-load from URL param if present
+            const urlKey = new URLSearchParams(window.location.search).get('maps_key');
+            if (urlKey) {
+                document.getElementById('maps-api-key-input').value = urlKey;
+                initMapsWithKey();
+            }
+        }
 
         boot();
     </script>
+
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         GOOGLE MAPS DIGITAL TWIN ENGINE
+         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+    <script>
+    // ─── Stadium geography ────────────────────────────────────────────────────
+    // Narendra Modi Stadium, Motera, Ahmedabad
+    // Center: 23.09096° N, 72.08518° E
+    // The 5×5 grid spans ~360m × ~360m centred on the playing field.
+    // Each cell is ~72m × ~72m  (approx 0.000647° lat × 0.000817° lng)
+    const STADIUM_CENTER  = { lat: 23.09096, lng: 72.08518 };
+    const CELL_LAT        = 0.000647;   // height of one 5×5 grid cell in degrees
+    const CELL_LNG        = 0.000817;   // width  of one 5×5 grid cell in degrees
+    const GRID_ROWS       = ['A','B','C','D','E'];
+    const GRID_COLS       = [1,2,3,4,5];
+
+    // Top-left corner of the 5×5 grid (NW corner of cell A1)
+    const GRID_ORIGIN_LAT = STADIUM_CENTER.lat + (5 / 2) * CELL_LAT;   // N edge of row A
+    const GRID_ORIGIN_LNG = STADIUM_CENTER.lng - (5 / 2) * CELL_LNG;   // W edge of col 1
+
+    // Gate & exit positions (real world GPS anchors inside Narendra Modi Stadium)
+    const GATE_MARKERS = [
+        { id: 'Gate A (North)', lat: 23.09320, lng: 72.08518, zone: 'A3', type: 'gate' },
+        { id: 'Gate B (NE)',    lat: 23.09264, lng: 72.08720, zone: 'A5', type: 'gate' },
+        { id: 'Gate C (East)',  lat: 23.09096, lng: 72.08805, zone: 'C5', type: 'exit' },
+        { id: 'Gate D (SE)',    lat: 23.08925, lng: 72.08720, zone: 'E5', type: 'gate' },
+        { id: 'Gate E (South)', lat: 23.08870, lng: 72.08518, zone: 'E3', type: 'gate' },
+        { id: 'Gate F (SW)',    lat: 23.08925, lng: 72.08316, zone: 'E1', type: 'gate' },
+        { id: 'Gate G (West)',  lat: 23.09096, lng: 72.08231, zone: 'C1', type: 'exit' },
+        { id: 'Gate H (NW)',    lat: 23.09264, lng: 72.08316, zone: 'A1', type: 'gate' },
+        { id: 'Players Tunnel', lat: 23.09096, lng: 72.08518, zone: 'C3', type: 'poi' },
+        { id: 'Media Centre',  lat: 23.09200, lng: 72.08600, zone: 'B4', type: 'poi' },
+    ];
+
+    // ─── Map state ────────────────────────────────────────────────────────────
+    let gmap           = null;
+    let mapLoaded      = false;
+    let heatmapLayer   = null;
+    let zonePolygons   = {};   // { zoneId: google.maps.Polygon }
+    let flowPolylines  = [];   // animated route path polylines
+    let gateMarkers    = [];   // Marker objects
+    let flowAnimTimer  = null;
+    let lastTwinZones  = [];
+    let lastTwinRoute  = [];
+
+    // ─── Colour helpers ───────────────────────────────────────────────────────
+    function densityToFill(density) {
+        if (density <= 30) return { fill: '#00ff88', opacity: 0.12 + density * 0.002, stroke: '#00c96a', strokeOpacity: 0.3 };
+        if (density <= 60) return { fill: '#fbbf24', opacity: 0.12 + (density - 30) * 0.003, stroke: '#f59e0b', strokeOpacity: 0.4 };
+        if (density <= 80) return { fill: '#f97316', opacity: 0.18 + (density - 60) * 0.005, stroke: '#ea580c', strokeOpacity: 0.5 };
+        return               { fill: '#ef4444', opacity: 0.30, stroke: '#dc2626', strokeOpacity: 0.7 };
+    }
+
+    // ─── Zone coordinate builder ──────────────────────────────────────────────
+    function zoneBounds(rowIdx, colIdx) {
+        // rowIdx 0=A … 4=E, colIdx 0=col1 … 4=col5
+        const north = GRID_ORIGIN_LAT - rowIdx * CELL_LAT;
+        const south = north - CELL_LAT;
+        const west  = GRID_ORIGIN_LNG + colIdx * CELL_LNG;
+        const east  = west + CELL_LNG;
+        return [
+            { lat: north, lng: west },
+            { lat: north, lng: east },
+            { lat: south, lng: east },
+            { lat: south, lng: west },
+        ];
+    }
+
+    function zoneCenter(rowIdx, colIdx) {
+        return {
+            lat: GRID_ORIGIN_LAT - rowIdx * CELL_LAT - CELL_LAT / 2,
+            lng: GRID_ORIGIN_LNG + colIdx * CELL_LNG + CELL_LNG / 2,
+        };
+    }
+
+    // ─── Heatmap data builder ─────────────────────────────────────────────────
+    function buildHeatmapData(zones) {
+        const pts = [];
+        zones.forEach(z => {
+            const ri = GRID_ROWS.indexOf(z.id[0]);
+            const ci = parseInt(z.id[1]) - 1;
+            if (ri < 0 || ci < 0) return;
+            const center = zoneCenter(ri, ci);
+            // Weight = density (0-100); repeat points for higher density
+            const weight = z.density / 100;
+            pts.push({ location: new google.maps.LatLng(center.lat, center.lng), weight });
+        });
+        return pts;
+    }
+
+    // ─── Map initialisation ───────────────────────────────────────────────────
+    function initDigitalTwinMap() {
+        const mapEl = document.getElementById('twin-map');
+
+        gmap = new google.maps.Map(mapEl, {
+            center: STADIUM_CENTER,
+            zoom: 17,
+            mapTypeId: 'satellite',
+            tilt: 0,
+            disableDefaultUI: true,
+            zoomControl: true,
+            zoomControlOptions: {
+                position: google.maps.ControlPosition.BOTTOM_RIGHT,
+            },
+            gestureHandling: 'cooperative',
+            styles: [
+                { featureType: 'all', elementType: 'labels.text.fill',
+                  stylers: [{ color: '#8892b0' }] },
+                { featureType: 'road', elementType: 'geometry',
+                  stylers: [{ color: '#0f1424' }] },
+                { featureType: 'road', elementType: 'geometry.stroke',
+                  stylers: [{ color: '#212a37' }] },
+                { featureType: 'poi', elementType: 'all', stylers: [{ visibility: 'off' }] },
+            ],
+        });
+
+        // ── Build zone polygons (5×5 grid) ──
+        GRID_ROWS.forEach((row, ri) => {
+            GRID_COLS.forEach((col, ci) => {
+                const zoneId = `${row}${col}`;
+                const poly = new google.maps.Polygon({
+                    paths: zoneBounds(ri, ci),
+                    strokeColor: '#4f6ef7',
+                    strokeOpacity: 0.25,
+                    strokeWeight: 1.5,
+                    fillColor: '#00ff88',
+                    fillOpacity: 0.05,
+                    map: gmap,
+                    zIndex: 1,
+                });
+
+                // Zone label overlay
+                const labelDiv = document.createElement('div');
+                labelDiv.style.cssText = `
+                    font-family: 'JetBrains Mono', monospace;
+                    font-size: 10px;
+                    font-weight: 700;
+                    color: rgba(99,130,255,0.55);
+                    text-align: center;
+                    pointer-events: none;
+                    text-shadow: 0 0 6px rgba(0,0,0,0.9);
+                    line-height: 1.2;
+                `;
+                labelDiv.innerHTML = `${zoneId}<br><span id="zone-density-${zoneId}" style="color:rgba(255,255,255,0.3);font-size:9px;">—</span>`;
+
+                const labelOverlay = new google.maps.OverlayView();
+                const ctr = zoneCenter(ri, ci);
+                labelOverlay.onAdd = function() {
+                    this.getPanes().overlayLayer.appendChild(labelDiv);
+                };
+                labelOverlay.draw = function() {
+                    const projection = this.getProjection();
+                    const point = projection.fromLatLngToDivPixel(new google.maps.LatLng(ctr.lat, ctr.lng));
+                    if (point) {
+                        labelDiv.style.left  = (point.x - 20) + 'px';
+                        labelDiv.style.top   = (point.y - 14) + 'px';
+                        labelDiv.style.position = 'absolute';
+                    }
+                };
+                labelOverlay.setMap(gmap);
+
+                zonePolygons[zoneId] = poly;
+            });
+        });
+
+        // ── Gate & exit markers ──
+        const gateIcon = (type) => ({
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: type === 'poi' ? 5 : 7,
+            fillColor: type === 'gate' ? '#00d4ff'
+                     : type === 'exit' ? '#fbbf24'
+                     : '#a78bfa',
+            fillOpacity: 0.9,
+            strokeColor: '#050810',
+            strokeWeight: 1.5,
+        });
+
+        GATE_MARKERS.forEach(gm => {
+            const marker = new google.maps.Marker({
+                position: { lat: gm.lat, lng: gm.lng },
+                map: gmap,
+                icon: gateIcon(gm.type),
+                title: gm.id,
+                zIndex: 5,
+            });
+
+            const infoWindow = new google.maps.InfoWindow({
+                content: `<div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#050810;padding:4px 6px;">
+                    <strong>${gm.id}</strong><br>Zone: ${gm.zone}
+                </div>`,
+            });
+
+            marker.addListener('click', () => {
+                infoWindow.open(gmap, marker);
+            });
+
+            gateMarkers.push(marker);
+        });
+
+        // ── Heatmap layer (crowd density) ──
+        heatmapLayer = new google.maps.visualization.HeatmapLayer({
+            data: [],
+            map: gmap,
+            radius: 45,
+            opacity: 0.65,
+            gradient: [
+                'rgba(0,255,136,0)',
+                'rgba(0,255,136,0.6)',
+                'rgba(251,191,36,0.7)',
+                'rgba(249,115,22,0.8)',
+                'rgba(239,68,68,0.9)',
+                'rgba(185,28,28,1)',
+            ],
+        });
+
+        mapLoaded = true;
+
+        // Hide the notice and show overlays
+        document.getElementById('map-key-notice').style.display  = 'none';
+        document.getElementById('map-overlay-stats').style.display = 'flex';
+        document.getElementById('map-phase-badge').style.display   = 'block';
+        document.getElementById('ai-decision-box').style.display   = 'flex';
+
+        addLog('info', '🗺️ Google Maps digital twin initialized — Narendra Modi Stadium');
+        addLog('info', 'Stadium: 23.09096°N 72.08518°E | Capacity: 132,000');
+
+        // Render with latest data if already fetched
+        if (lastTwinZones.length > 0) updateMapTwin(lastTwinZones, lastTwinRoute);
+    }
+
+    // ─── Main map update ──────────────────────────────────────────────────────
+    function updateMapTwin(zones, routePath) {
+        lastTwinZones = zones;
+        lastTwinRoute = routePath || [];
+
+        if (!mapLoaded || !gmap) return;
+
+        // ── Update zone polygon fills and density labels ──
+        zones.forEach(z => {
+            const poly = zonePolygons[z.id];
+            if (!poly) return;
+
+            const col = densityToFill(z.density);
+            poly.setOptions({
+                fillColor: col.fill,
+                fillOpacity: col.opacity,
+                strokeColor: col.stroke,
+                strokeOpacity: col.strokeOpacity,
+                strokeWeight: z.density > 80 ? 2.5 : 1.5,
+            });
+
+            // Update density label
+            const labelEl = document.getElementById(`zone-density-${z.id}`);
+            if (labelEl) {
+                labelEl.textContent = `${Math.round(z.density)}%`;
+                labelEl.style.color = z.density > 80 ? '#ef4444'
+                                    : z.density > 60 ? '#f97316'
+                                    : z.density > 30 ? '#fbbf24'
+                                    : 'rgba(0,255,136,0.8)';
+            }
+        });
+
+        // ── Update heatmap ──
+        heatmapLayer.setData(buildHeatmapData(zones));
+
+        // ── Draw flow path ──
+        drawMapFlowPath(routePath);
+
+        // ── Badge sync ──
+        document.getElementById('twin-update-badge').textContent = 'LIVE ●';
+        setTimeout(() => {
+            const badge = document.getElementById('twin-update-badge');
+            if (badge) badge.textContent = 'SYNCING...';
+        }, 1800);
+    }
+
+    // ─── Animated flow path on the map ───────────────────────────────────────
+    function drawMapFlowPath(pathZoneIds) {
+        // Remove old polylines
+        flowPolylines.forEach(pl => pl.setMap(null));
+        flowPolylines = [];
+        if (flowAnimTimer) clearInterval(flowAnimTimer);
+
+        if (!pathZoneIds || pathZoneIds.length < 2) return;
+
+        // Convert zone IDs to LatLng
+        const pts = pathZoneIds.map(id => {
+            const ri = GRID_ROWS.indexOf(id[0]);
+            const ci = parseInt(id[1]) - 1;
+            if (ri < 0 || ci < 0) return null;
+            const c = zoneCenter(ri, ci);
+            return new google.maps.LatLng(c.lat, c.lng);
+        }).filter(Boolean);
+
+        if (pts.length < 2) return;
+
+        // Glow layer (wide, soft purple)
+        const glowLine = new google.maps.Polyline({
+            path: pts,
+            strokeColor: '#818cf8',
+            strokeOpacity: 0.15,
+            strokeWeight: 16,
+            map: gmap,
+            zIndex: 3,
+        });
+        flowPolylines.push(glowLine);
+
+        // Main route line
+        const routeLine = new google.maps.Polyline({
+            path: pts,
+            strokeColor: '#818cf8',
+            strokeOpacity: 0.7,
+            strokeWeight: 3,
+            icons: [{
+                icon: {
+                    path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                    scale: 3,
+                    strokeColor: '#a5b4fc',
+                    strokeWeight: 1,
+                    fillColor: '#818cf8',
+                    fillOpacity: 0.9,
+                },
+                offset: '0%',
+                repeat: '60px',
+            }],
+            map: gmap,
+            zIndex: 4,
+        });
+        flowPolylines.push(routeLine);
+
+        // Animate dash offset for flowing effect
+        let offset = 0;
+        flowAnimTimer = setInterval(() => {
+            offset = (offset + 2) % 60;
+            const icons = routeLine.get('icons');
+            icons[0].offset = offset + 'px';
+            routeLine.set('icons', icons);
+        }, 50);
+
+        // Start / end markers (pulsing circles via SymbolPath)
+        const startCircle = new google.maps.Marker({
+            position: pts[0],
+            map: gmap,
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 9,
+                fillColor: '#00ff88',
+                fillOpacity: 0.85,
+                strokeColor: '#050810',
+                strokeWeight: 2,
+            },
+            title: `Start: ${pathZoneIds[0]}`,
+            zIndex: 8,
+        });
+        flowPolylines.push({ setMap: (m) => startCircle.setMap(m) });
+
+        const endCircle = new google.maps.Marker({
+            position: pts[pts.length - 1],
+            map: gmap,
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 9,
+                fillColor: '#f472b6',
+                fillOpacity: 0.85,
+                strokeColor: '#050810',
+                strokeWeight: 2,
+            },
+            title: `End: ${pathZoneIds[pathZoneIds.length - 1]}`,
+            zIndex: 8,
+        });
+        flowPolylines.push({ setMap: (m) => endCircle.setMap(m) });
+    }
+
+    // ─── Maps API loader ──────────────────────────────────────────────────────
+    function initMapsWithKey() {
+        const key = document.getElementById('maps-api-key-input').value.trim();
+        if (!key || !key.startsWith('AIza')) {
+            document.getElementById('maps-api-key-input').style.borderColor = '#ef4444';
+            addLog('error', 'Invalid Maps API key — must start with AIza...');
+            return;
+        }
+
+        document.getElementById('maps-api-key-input').style.borderColor = '';
+        sessionStorage.setItem('nv_maps_key', key);
+
+        // Load Maps JS API dynamically
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=visualization&callback=initDigitalTwinMap`;
+        script.async = true;
+        script.onerror = () => {
+            addLog('error', 'Failed to load Google Maps — check your API key and billing account.');
+            document.getElementById('maps-api-key-input').style.borderColor = '#ef4444';
+        };
+        document.head.appendChild(script);
+
+        addLog('info', `Loading Google Maps JS API for Narendra Modi Stadium...`);
+    }
+
+    // ─── Hook into the existing fetchData cycle ───────────────────────────────
+    // We patch the global fetchData so every API response drives the twin.
+    const _origFetchData = fetchData;
+    fetchData = async function(...args) {
+        await _origFetchData.apply(this, args);
+        // lastZoneData and currentPath are already set by the original fetchData
+        updateMapTwin(lastZoneData, currentPath);
+
+        // Sync phase badge on map
+        const phaseBadge = document.getElementById('map-phase-badge');
+        if (phaseBadge) {
+            const phaseTxt = document.getElementById('phase-badge')?.textContent || '';
+            phaseBadge.textContent = phaseTxt;
+        }
+    };
+
+    // Auto-restore key from sessionStorage
+    (function restoreKeyFromSession() {
+        const saved = sessionStorage.getItem('nv_maps_key');
+        if (saved) {
+            document.getElementById('maps-api-key-input').value = saved;
+        }
+    })();
+    </script>
+    <!-- What-If Modal -->
+    <div class="whatif-modal-overlay" id="whatif-modal">
+        <div class="whatif-modal">
+            <div class="whatif-header">
+                <span>🧪 WHAT-IF SCENARIO ENGINE</span>
+                <span class="whatif-close" onclick="closeWhatIfModal()">✖</span>
+            </div>
+            <div class="whatif-body">
+                <div class="whatif-controls">
+                    <div class="whatif-control-group">
+                        <label>Crowd Injection Delta: <span id="wi-crowd-val">+0</span></label>
+                        <input type="range" id="wi-crowd" min="-500" max="1000" step="50" value="0" oninput="document.getElementById('wi-crowd-val').textContent = (this.value > 0 ? '+' : '') + this.value" />
+                    </div>
+                    <div class="whatif-control-group">
+                        <label>Force Evacuation Phase</label>
+                        <select id="wi-phase">
+                            <option value="auto">Keep Current Phase</option>
+                            <option value="evacuation">🚨 Trigger Evacuation</option>
+                        </select>
+                    </div>
+                    <div class="whatif-control-group" style="grid-column: span 2;">
+                        <label>Close Gates (Hold Cmd/Ctrl to multi-select)</label>
+                        <select id="wi-gates" multiple style="height: 60px;">
+                            <option value="A">Gate A (North)</option>
+                            <option value="H">Gate H (NW)</option>
+                            <option value="E">Gate E (South)</option>
+                            <option value="F">Gate F (SW)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button class="whatif-run-btn" id="wi-run-btn" onclick="runWhatIf()">▶ EXECUTE PARALLEL PREDICTION</button>
+                
+                <div class="whatif-results" id="wi-results">
+                    <div class="whatif-result-card">
+                        <div class="whatif-result-title">Peak Congestion</div>
+                        <div class="whatif-result-value">
+                            <span id="wi-res-cong">--%</span>
+                            <span class="whatif-result-delta" id="wi-delta-cong"></span>
+                        </div>
+                    </div>
+                    <div class="whatif-result-card">
+                        <div class="whatif-result-title">Avg Wait Time</div>
+                        <div class="whatif-result-value">
+                            <span id="wi-res-wait">--s</span>
+                            <span class="whatif-result-delta" id="wi-delta-wait"></span>
+                        </div>
+                    </div>
+                    <div class="whatif-result-card" style="grid-column: span 2;">
+                        <div class="whatif-result-title">Active Agents</div>
+                        <div class="whatif-result-value">
+                            <span id="wi-res-agents">--</span>
+                            <span class="whatif-result-delta" id="wi-delta-agents"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

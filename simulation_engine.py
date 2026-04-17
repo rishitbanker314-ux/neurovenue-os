@@ -32,7 +32,17 @@ TICK_INTERVAL = 3  # seconds
 VENUE_SIZE = 500.0
 ZONE_SIZE = 100.0
 
-GATE_ZONES = {"A1", "A5", "E1", "E5"}
+GATE_ZONES_MAPPING = {
+    "A": "A3",
+    "B": "A5",
+    "C": "C5",
+    "D": "E5",
+    "E": "E3",
+    "F": "E1",
+    "G": "C1",
+    "H": "A1"
+}
+
 FOOD_ZONES = {"B2", "B4", "D2", "D4"}
 
 
@@ -100,6 +110,7 @@ class SimulationEngine:
 
         self.tick: int = 0
         self._manual_phase = "auto"
+        self.active_gates = set(GATE_ZONES_MAPPING.values())
         
         # Physics state
         self.prev_zone_densities = {}
@@ -127,6 +138,23 @@ class SimulationEngine:
                     "congestion_score": 0.0
                 })
         return zones
+
+    def close_gate(self, gate_char: str) -> bool:
+        """Close a specific gate, removing it from active_gates."""
+        gate_char = gate_char.upper()
+        if gate_char in GATE_ZONES_MAPPING:
+            zone = GATE_ZONES_MAPPING[gate_char]
+            if zone in self.active_gates:
+                self.active_gates.remove(zone)
+                return True
+        return False
+
+    def add_agents(self, count: int):
+        """Dynamically inject more agents into the simulation."""
+        for _ in range(count):
+            x = random.uniform(0, VENUE_SIZE)
+            y = random.uniform(0, VENUE_SIZE)
+            self.agents.append(Agent([x, y]))
 
     @property
     def manual_phase(self):
@@ -157,6 +185,7 @@ class SimulationEngine:
         ghost = SimulationEngine(0) # bypass generating empty agents
         ghost.tick = self.tick
         ghost.manual_phase = self.manual_phase
+        ghost.active_gates = set(self.active_gates)
         ghost.prev_zone_densities = dict(self.prev_zone_densities)
         
         # Fast deepcopy of agents
@@ -210,6 +239,115 @@ class SimulationEngine:
                     
         return predictions
 
+    def get_metrics(self) -> dict:
+        """Calculate system-wide aggregate metrics for comparisons."""
+        if not self.zones_list:
+            return {"peak_congestion": 0, "avg_wait": 0, "active_agents": 0}
+        
+        peak_congestion = max((z.get("congestion_score", 0) for z in self.zones_list), default=0)
+        avg_wait = sum(z.get("wait_time", 0) for z in self.zones_list) / len(self.zones_list)
+        return {
+            "peak_congestion": round(peak_congestion, 1),
+            "avg_wait": round(avg_wait, 1),
+            "active_agents": len(self.agents)
+        }
+
+    def run_what_if_scenario(self, crowd_delta: int, close_gates: list, phase: str, ticks: int = 20) -> dict:
+        """Run an isolated future simulation with modified parameters."""
+        ghost = self.clone()
+        
+        # Apply parameters
+        if crowd_delta > 0:
+            ghost.add_agents(crowd_delta)
+        elif crowd_delta < 0:
+            # Randomly remove agents to match delta
+            to_remove = min(abs(crowd_delta), len(ghost.agents))
+            ghost.agents = ghost.agents[to_remove:]
+            
+        for g in close_gates:
+            ghost.close_gate(g)
+            
+        if phase and phase != "auto":
+            ghost.manual_phase = phase
+            
+        # Fast forward
+        for _ in range(ticks):
+            ghost.updateAgentStates()
+            ghost.updateMovement()
+            ghost.updateEnvironment()
+            ghost.tick += 1
+            
+        return ghost.get_metrics()
+
+    def analyze_recommendations(self) -> dict:
+        """Run parallel ghosts to generate an optimal operational recommendation."""
+        # 1. Baseline
+        baseline = self.run_what_if_scenario(0, [], "auto", ticks=15)
+        baseline_cong = baseline["peak_congestion"]
+        
+        best_action = None
+        best_explanation = ""
+        best_factors = []
+        best_improvement = 0
+        
+        # Test 1: What if we close each of the currently open gates?
+        for gate in list(self.active_gates):
+            ghost_metrics = self.run_what_if_scenario(0, [gate], "auto", ticks=15)
+            improvement = baseline_cong - ghost_metrics["peak_congestion"]
+            if improvement > best_improvement:
+                best_improvement = improvement
+                best_action = f"Close Gate {gate} to reduce peak congestion by {round(improvement, 1)}%"
+                best_explanation = f"Simulating closure of Gate {gate} forces directional traffic away from active bottlenecks, rebalancing spatial load."
+                best_factors = [
+                    f"Baseline peak hazard: {baseline_cong}%",
+                    f"Post-optimization hazard: {ghost_metrics['peak_congestion']}%",
+                    f"Diverts traffic dynamically from active routes"
+                ]
+                
+        # Test 2: What if we open each currently closed gate? 
+        all_gates = {"A", "B", "C", "D", "E", "F", "G", "H"}
+        closed_gates = all_gates - self.active_gates
+        for gate in closed_gates:
+            ghost = self.clone()
+            ghost.active_gates.add(gate)
+            # Run manually
+            for _ in range(15):
+                ghost.updateAgentStates()
+                ghost.updateMovement()
+                ghost.updateEnvironment()
+                ghost.tick += 1
+            metrics = ghost.get_metrics()
+            improvement = baseline_cong - metrics["peak_congestion"]
+            if improvement > best_improvement:
+                best_improvement = improvement
+                best_action = f"Open Gate {gate} to reduce peak congestion by {round(improvement, 1)}%"
+                best_explanation = f"Simulating opening of Gate {gate} introduces new egress vectors, absorbing excess pressure surrounding primary chokepoints."
+                best_factors = [
+                    f"Baseline peak hazard: {baseline_cong}%",
+                    f"Post-optimization hazard: {metrics['peak_congestion']}%",
+                    f"Reduces localized agent pathing friction"
+                ]
+        
+        if best_improvement > 2.0:
+            confidence = min(99, max(75, int(65 + (best_improvement * 2))))
+            return {
+                "action": f"TACTICAL ALERT: {best_action}",
+                "explanation": best_explanation,
+                "factors": best_factors,
+                "confidence": confidence
+            }
+        else:
+            return {
+                "action": "System optimal. No high-impact interventions identified.",
+                "explanation": "Parallel ghost simulations evaluated all gate configurations. No modification yielded > 2.0% congestion improvement.",
+                "factors": [
+                    f"Current peak congestion: {baseline_cong}%",
+                    "Alternative vectors sub-optimal"
+                ],
+                "confidence": 99
+            }
+
+
     # --- Global Simulation Loop ---
 
     def updateAgentStates(self):
@@ -222,14 +360,18 @@ class SimulationEngine:
             if phase == "evacuation":
                 agent.state = "evacuation_surge"
                 agent.surge_pressure = 1.0
-                if not agent.destination or get_zone_from_pos(agent.destination[0], agent.destination[1]) not in GATE_ZONES:
-                    gate = random.choice(list(GATE_ZONES))
+                if not self.active_gates:
+                    continue # No gates available
+                if not agent.destination or get_zone_from_pos(agent.destination[0], agent.destination[1]) not in self.active_gates:
+                    gate = random.choice(list(self.active_gates))
                     agent.destination = get_zone_center(gate)
                     
             elif phase in ["entry", "exit"]:
                 agent.state = "moving_to_exit"
+                if not self.active_gates and phase == "exit":
+                    continue # Nowhere to exit
                 if random.random() < 0.2 or not agent.destination:
-                    target = random.choice(list(GATE_ZONES)) if phase == "exit" else f"{random.choice(ROWS)}{random.choice(COLS)}"
+                    target = random.choice(list(self.active_gates)) if phase == "exit" else f"{random.choice(ROWS)}{random.choice(COLS)}"
                     agent.destination = get_zone_center(target)
                     
             elif phase == "halftime":
