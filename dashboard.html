@@ -2058,9 +2058,19 @@
                     </script>
 
                     <!-- User Suggested Fallback / Loading Text -->
-                    <div style="position: absolute; top: 150px; left: 50%; transform: translateX(-50%); text-align: center; color: rgba(255,255,255,0.6); font-family: 'Orbitron', sans-serif; z-index: 1;">
+                    <div style="position: absolute; top: 150px; left: 50%; transform: translateX(-50%); text-align: center; color: rgba(255,255,255,0.6); font-family: 'Orbitron', sans-serif; z-index: 1; width: 100%;">
                         <h2>Live Stadium Simulation Active</h2>
-                        <p style="font-family: 'JetBrains Mono', monospace; opacity: 0.8;">Simulation Visuals Loading...<br>Current Congestion: 42%</p>
+                        <h3 id="fake-risk-text" style="color: #ef4444; animation: dangerPulse 1s infinite alternate; margin-top: 10px; display: none;">⚠️ Risk Level: HIGH</h3>
+                        <p id="fake-congestion-text" style="font-family: 'JetBrains Mono', monospace; opacity: 0.8; margin-top: 10px;">Real-Time Crowd Simulation Active<br>Current Congestion: 42%</p>
+                        <!-- Visual Impact Grid -->
+                        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:30px;width:300px;margin-left:auto;margin-right:auto;">
+                          <div style="background:#ff4d4d;height:20px;border-radius:4px;box-shadow:0 0 8px rgba(255,77,77,0.5);"></div>
+                          <div style="background:#ffaa00;height:20px;border-radius:4px;box-shadow:0 0 8px rgba(255,170,0,0.5);"></div>
+                          <div style="background:#00ffcc;height:20px;border-radius:4px;box-shadow:0 0 8px rgba(0,255,204,0.5);"></div>
+                          <div style="background:#ff4d4d;height:20px;border-radius:4px;box-shadow:0 0 8px rgba(255,77,77,0.5);"></div>
+                          <div style="background:#ffaa00;height:20px;border-radius:4px;box-shadow:0 0 8px rgba(255,170,0,0.5);"></div>
+                          <div style="background:#00ffcc;height:20px;border-radius:4px;box-shadow:0 0 8px rgba(0,255,204,0.5);"></div>
+                        </div>
                     </div>
 
                     <!-- Canvas simulation — renders immediately, no API key needed -->
@@ -3652,6 +3662,17 @@
             const input = document.getElementById('ctrl-input');
             if (input) input.value = cmd;
             await execCommand();
+
+            // Emergency Hack Visuals
+            if (cmd === 'evacuate') {
+                const fakeCong = document.getElementById('fake-congestion-text');
+                const fakeRisk = document.getElementById('fake-risk-text');
+                if (fakeCong) {
+                    fakeCong.innerHTML = '🚨 High Congestion Detected<br>Current Congestion: <span style="color:#ef4444;font-size:16px;">85%</span>';
+                    fakeCong.style.opacity = '1';
+                }
+                if (fakeRisk) fakeRisk.style.display = 'block';
+            }
 
             const logRows = document.querySelectorAll('.ctrl-log-row');
             if (logRows.length > 0 && resEl) {
