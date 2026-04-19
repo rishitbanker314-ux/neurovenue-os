@@ -83,12 +83,11 @@
            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
         .command-center {
             display: grid;
-            grid-template-rows: var(--header-h) 1fr var(--footer-h);
-            grid-template-columns: 300px 1fr 300px;
+            grid-template-rows: var(--header-h) 1fr;
+            grid-template-columns: 320px 1fr 340px;
             grid-template-areas:
                 "header  header  header"
-                "left    center  right"
-                "footer  footer  footer";
+                "left    center  right";
             height: 100vh;
             gap: var(--panel-gap);
             padding: var(--panel-gap);
@@ -716,84 +715,304 @@
         .overlay-stat .val { color: var(--text-primary); font-weight: 600; }
 
         /* ─── AI Decision Overlay ─── */
+        /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+           AI CONTROL TERMINAL (operator command surface)
+           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
         .canvas-ai-decision {
             position: absolute;
             bottom: 16px;
             right: 16px;
-            width: 280px;
+            width: 310px;
+            padding: 0;
+            border-radius: 10px;
+            background: rgba(8, 6, 22, 0.92);
+            border: 1px solid rgba(0, 212, 255, 0.4);
+            backdrop-filter: blur(12px);
+            font-family: 'JetBrains Mono', monospace;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            pointer-events: all;  /* must be interactive */
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.12), 0 8px 32px rgba(0,0,0,0.6);
+            z-index: 50;
+            overflow: hidden;
+        }
+
+        .ctrl-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 10px 14px 8px;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.15);
+            background: rgba(0, 212, 255, 0.05);
+        }
+        .ctrl-header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--cyan-core);
+            letter-spacing: 1.5px;
+        }
+        .ctrl-status-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--green-core);
+            box-shadow: 0 0 6px var(--green-core);
+            animation: pulse 1.5s infinite;
+        }
+        .ctrl-mode-badge {
+            font-size: 9px;
+            color: rgba(0, 212, 255, 0.5);
+            letter-spacing: 0.5px;
+        }
+
+        /* Execution log — last N operations */
+        .ctrl-log {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            max-height: 148px;
+            overflow-y: auto;
+            padding: 6px 0;
+            scrollbar-width: none;
+        }
+        .ctrl-log::-webkit-scrollbar { display: none; }
+        .ctrl-log-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            animation: fadeIn 0.25s ease;
+        }
+        .ctrl-log-row:last-child { border-bottom: none; }
+        .ctrl-log-action {
+            font-size: 10px;
+            color: var(--text-primary);
+            line-height: 1.3;
+        }
+        .ctrl-log-action .cmd-zone {
+            color: var(--cyan-core);
+            font-weight: 700;
+        }
+        .ctrl-log-action .cmd-verb {
+            color: rgba(255,255,255,0.55);
+        }
+        .ctrl-log-delta {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+        .ctrl-log-delta.pos  { background: rgba(239,68,68,0.15);  color: #ef4444; }
+        .ctrl-log-delta.neg  { background: rgba(0,255,136,0.12);  color: #00ff88; }
+        .ctrl-log-delta.neut { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.4); }
+
+        /* Empty-state inside the log */
+        .ctrl-log-empty {
             padding: 14px;
-            border-radius: 8px;
-            background: rgba(15, 10, 30, 0.85);
-            border: 1px solid var(--pink-core);
-            backdrop-filter: blur(8px);
+            font-size: 10px;
+            color: rgba(255,255,255,0.2);
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+
+        /* Quick-action chips (pre-built commands) */
+        .ctrl-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            padding: 8px 14px 6px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        .ctrl-chip {
+            font-size: 9px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 100px;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            border: 1px solid;
+            background: transparent;
+            transition: all 0.15s ease;
             font-family: inherit;
+        }
+        .ctrl-chip:hover { opacity: 0.8; }
+        .ctrl-chip.gate  { color: #00d4ff; border-color: rgba(0,212,255,0.4); }
+        .ctrl-chip.gate:hover  { background: rgba(0,212,255,0.12); }
+        .ctrl-chip.surge { color: #f97316; border-color: rgba(249,115,22,0.4); }
+        .ctrl-chip.surge:hover { background: rgba(249,115,22,0.12); }
+        .ctrl-chip.evac  { color: #ef4444; border-color: rgba(239,68,68,0.4); }
+        .ctrl-chip.evac:hover  { background: rgba(239,68,68,0.12); }
+        .ctrl-chip.clear { color: #00ff88; border-color: rgba(0,255,136,0.3); }
+        .ctrl-chip.clear:hover { background: rgba(0,255,136,0.08); }
+
+        /* Command input row */
+        .ctrl-input-row {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            border-top: 1px solid rgba(0, 212, 255, 0.2);
+            background: rgba(0, 212, 255, 0.04);
+        }
+        .ctrl-prompt {
+            padding: 0 8px 0 14px;
+            font-size: 12px;
+            color: var(--cyan-core);
+            user-select: none;
+            font-weight: 700;
+        }
+        .ctrl-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            padding: 10px 4px;
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-primary);
+            caret-color: var(--cyan-core);
+        }
+        .ctrl-input::placeholder { color: rgba(255,255,255,0.2); }
+        .ctrl-exec-btn {
+            padding: 6px 12px;
+            margin: 4px 8px 4px 0;
+            background: rgba(0, 212, 255, 0.15);
+            border: 1px solid rgba(0, 212, 255, 0.35);
+            border-radius: 5px;
+            color: var(--cyan-core);
+            font-size: 10px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: all 0.15s ease;
+        }
+        .ctrl-exec-btn:hover { background: rgba(0, 212, 255, 0.28); }
+        .ctrl-exec-btn.executing {
+            background: rgba(249, 115, 22, 0.2);
+            border-color: rgba(249, 115, 22, 0.5);
+            color: #f97316;
+        }
+
+        /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+           QUICK ACTION BUTTONS
+           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+        .qa-panel {
             display: flex;
             flex-direction: column;
             gap: 8px;
-            pointer-events: none;
-            box-shadow: 0 0 20px rgba(255, 42, 109, 0.15);
-            transform: translateY(0);
-            transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
-        .canvas-ai-decision.updating {
-            opacity: 0.5;
-            transform: translateY(5px);
-        }
-
-        .canvas-ai-decision .ai-header {
+        .qa-btn {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid;
+            background: transparent;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            text-align: left;
+            transition: all 0.18s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .qa-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 0.18s ease;
+        }
+        .qa-btn:hover::before { opacity: 1; }
+        .qa-btn:active { transform: scale(0.98); }
+
+        /* Flash animation on execute */
+        @keyframes qaFlash {
+            0%   { opacity: 0.9; }
+            40%  { opacity: 0.2; }
+            100% { opacity: 0; }
+        }
+        .qa-btn.firing::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            animation: qaFlash 0.5s ease forwards;
+        }
+
+        .qa-btn-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+        .qa-btn-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .qa-btn-label {
             font-size: 11px;
             font-weight: 700;
-            color: var(--pink-core);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.5px;
         }
+        .qa-btn-sub {
+            font-size: 9px;
+            opacity: 0.55;
+            letter-spacing: 0.3px;
+        }
+        .qa-btn-result {
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 4px;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            min-width: 60px;
+            text-align: center;
+        }
+        .qa-btn-result.visible { opacity: 1; }
 
-        .canvas-ai-decision .ai-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            animation: brainPulse 2s infinite;
+        /* Per-variant colours */
+        .qa-btn.emergency {
+            border-color: rgba(239,68,68,0.45);
+            grid-column: span 2;
         }
-        .canvas-ai-decision .ai-action {
-            font-weight: 500;
-        }
+        .qa-btn.emergency::before { background: rgba(239,68,68,0.08); }
+        .qa-btn.emergency.firing::after { background: rgba(239,68,68,0.35); }
+        .qa-btn.emergency .qa-btn-label { color: #ef4444; }
+        .qa-btn.emergency .qa-btn-result { background: rgba(239,68,68,0.15); color: #ef4444; }
 
-        .canvas-ai-decision .ai-expl {
-            font-size: 11px;
-            color: var(--text-secondary);
-            margin-top: 4px;
-            line-height: 1.4;
+        .qa-btn.gate {
+            border-color: rgba(0,212,255,0.35);
         }
-        
-        .canvas-ai-decision .ai-factors {
-            font-size: 10px;
-            color: var(--cyan-core);
-            margin-top: 6px;
-            padding-left: 12px;
-            list-style: none;
-        }
+        .qa-btn.gate::before { background: rgba(0,212,255,0.07); }
+        .qa-btn.gate.firing::after { background: rgba(0,212,255,0.25); }
+        .qa-btn.gate .qa-btn-label { color: #00d4ff; }
+        .qa-btn.gate .qa-btn-result { background: rgba(0,212,255,0.12); color: #00d4ff; }
 
-        .canvas-ai-decision .ai-factors li::before {
-            content: "•";
-            color: var(--pink-core);
-            font-weight: bold;
-            display: inline-block; 
-            width: 1em;
-            margin-left: -1em;
+        .qa-btn.crowd {
+            border-color: rgba(249,115,22,0.4);
         }
+        .qa-btn.crowd::before { background: rgba(249,115,22,0.07); }
+        .qa-btn.crowd.firing::after { background: rgba(249,115,22,0.25); }
+        .qa-btn.crowd .qa-btn-label { color: #f97316; }
+        .qa-btn.crowd .qa-btn-result { background: rgba(249,115,22,0.12); color: #f97316; }
 
-        .canvas-ai-decision .ai-conf {
-            margin-top: 8px;
-            font-size: 10px;
-            font-weight: bold;
-            text-align: right;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 6px;
+        /* Two-column row for gate + crowd */
+        .qa-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
         }
 
         /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1465,6 +1684,55 @@
 
         .map-key-btn:hover { opacity: 0.85; }
 
+        /* Floating Overlays on Map */
+        .map-results-panel {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(8, 6, 22, 0.92);
+            border: 1px solid var(--border-active);
+            backdrop-filter: blur(12px);
+            border-radius: 8px;
+            padding: 12px 14px;
+            width: 220px;
+            pointer-events: none;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .mrp-title {
+            font-size: 10px;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .mrp-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .mrp-label { font-size: 10px; color: var(--text-secondary); }
+        .mrp-value { font-size: 12px; font-weight: bold; }
+        
+        .mrp-risk-low { color: var(--green-core); text-shadow: 0 0 5px var(--green-glow); }
+        .mrp-risk-med { color: var(--yellow-core); text-shadow: 0 0 5px var(--yellow-glow); }
+        .mrp-risk-high { color: var(--red-core); text-shadow: 0 0 5px var(--red-glow); }
+        
+        .mrp-zones {
+            font-size: 9px;
+            color: var(--text-primary);
+            background: rgba(255,255,255,0.05);
+            padding: 6px;
+            border-radius: 4px;
+            word-wrap: break-word;
+        }
+
         /* Floating overlays on the map */
         .map-overlay-stats {
             position: absolute;
@@ -1510,6 +1778,38 @@
             backdrop-filter: blur(8px);
             z-index: 10;
             pointer-events: none;
+        }
+
+        /* ━━━━━━━━━━ NEW: Simulation Feedback ━━━━━━━━━━ */
+        .sim-feedback-badge {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(8, 12, 16, 0.85);
+            border: 1px solid rgba(0, 212, 255, 0.4);
+            border-radius: 20px;
+            padding: 6px 14px;
+            color: var(--cyan-core);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 50;
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.15);
+            backdrop-filter: blur(4px);
+        }
+        
+        .sim-spinner {
+            width: 14px;
+            height: 14px;
+            animation: spin 1.5s linear infinite;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
         }
 
         /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1658,84 +1958,81 @@
             </div>
         </header>
 
-        <!-- ━━━ LEFT PANEL ━━━ -->
+        <!-- ━━━ LEFT PANEL - CONTROLS ━━━ -->
         <div class="left-panel">
-            <!-- KPI Section -->
-            <div class="panel kpi-section">
-                <div class="panel-title"><span class="dot"></span>LIVE METRICS</div>
-                <div class="kpi-grid">
-                    <div class="kpi-card skeleton" data-tooltip="Overall venue crowd density average">
-                        <div class="kpi-label">Avg Density</div>
-                        <div class="kpi-value" id="stat-avg-density" style="color: var(--cyan-core);">—</div>
-                        <div class="kpi-delta neutral" id="delta-density">—</div>
-                    </div>
-                    <div class="kpi-card skeleton" data-tooltip="Zones currently exceeding safe capacity">
-                        <div class="kpi-label">Hot Zones</div>
-                        <div class="kpi-value" id="stat-hot-zones" style="color: var(--red-core);">—</div>
-                        <div class="kpi-delta neutral" id="delta-hot">—</div>
-                    </div>
-                    <div class="kpi-card skeleton" data-tooltip="Average pace of crowd movement (m/s)">
-                        <div class="kpi-label">Avg Speed</div>
-                        <div class="kpi-value" id="stat-avg-speed" style="color: var(--green-core);">—</div>
-                        <div class="kpi-delta neutral" id="delta-speed">—</div>
-                    </div>
-                    <div class="kpi-card skeleton" data-tooltip="AI pathfinding calculation certainty">
-                        <div class="kpi-label">Confidence</div>
-                        <div class="kpi-value" id="stat-confidence" style="color: var(--purple-core);">—</div>
-                        <div class="kpi-delta neutral" id="delta-conf">—</div>
+            <!-- ━━━ QUICK ACTIONS ━━━ -->
+            <div class="panel">
+                <div class="panel-title"><span class="dot" style="background:var(--red-core);"></span>QUICK ACTIONS</div>
+                <div class="qa-panel">
+                    <button class="qa-btn emergency" id="qa-emergency" onclick="qaFire(this, 'evacuate', 'qa-res-emergency')">
+                        <span class="qa-btn-icon">🚨</span>
+                        <div class="qa-btn-body">
+                            <div class="qa-btn-label">SIMULATE EMERGENCY</div>
+                            <div class="qa-btn-sub">Force full evacuation protocol</div>
+                        </div>
+                        <div class="qa-btn-result" id="qa-res-emergency">—</div>
+                    </button>
+                    <div class="qa-row">
+                        <button class="qa-btn gate" id="qa-gate" onclick="qaFire(this, 'close gate B', 'qa-res-gate')">
+                            <span class="qa-btn-icon">🔒</span>
+                            <div class="qa-btn-body">
+                                <div class="qa-btn-label">CLOSE GATE B</div>
+                                <div class="qa-btn-sub">Remove NE egress</div>
+                            </div>
+                            <div class="qa-btn-result" id="qa-res-gate">—</div>
+                        </button>
+                        <button class="qa-btn crowd" id="qa-crowd" onclick="qaFire(this, 'increase density', 'qa-res-crowd')">
+                            <span class="qa-btn-icon">👥</span>
+                            <div class="qa-btn-body">
+                                <div class="qa-btn-label">INCREASE CROWD</div>
+                                <div class="qa-btn-sub">Inject +100 spectators</div>
+                            </div>
+                            <div class="qa-btn-result" id="qa-res-crowd">—</div>
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Heatmap Section -->
-            <div class="panel heatmap-section">
-                <div class="panel-title"><span class="dot" style="background: var(--orange-core);"></span>ZONE HEATMAP</div>
-                <div class="heatmap-grid" id="heatmap-grid"></div>
-            </div>
-
-            <!-- Behavioral Analytics -->
-            <div class="panel analytics-section">
-                <div class="panel-title"><span class="dot" style="background: var(--purple-core);"></span>BEHAVIORAL ANALYTICS</div>
-                <div class="analytics-list" id="analytics-list">
-                    <div class="analytics-item skeleton" data-tooltip="Rate of people passing through monitored areas">
-                        <div class="analytics-icon" style="background: rgba(0,212,255,0.1);">🚶</div>
-                        <div class="analytics-content">
-                            <div class="analytics-label">Flow Rate</div>
-                            <div class="analytics-value" id="analytics-flow">0 ppl/min</div>
-                            <div class="analytics-bar"><div class="analytics-bar-fill" id="bar-flow" style="width: 0%; background: var(--cyan-core);"></div></div>
-                        </div>
-                    </div>
-                    <div class="analytics-item skeleton" data-tooltip="Average bottleneck wait duration">
-                        <div class="analytics-icon" style="background: rgba(251,191,36,0.1);">⏱️</div>
-                        <div class="analytics-content">
-                            <div class="analytics-label">Avg Wait Time</div>
-                            <div class="analytics-value" id="analytics-wait">0s</div>
-                            <div class="analytics-bar"><div class="analytics-bar-fill" id="bar-wait" style="width: 0%; background: var(--yellow-core);"></div></div>
-                        </div>
-                    </div>
-                    <div class="analytics-item skeleton" data-tooltip="Maximum theoretical crowd volume currently sustained">
-                        <div class="analytics-icon" style="background: rgba(0,255,136,0.1);">📊</div>
-                        <div class="analytics-content">
-                            <div class="analytics-label">Throughput</div>
-                            <div class="analytics-value" id="analytics-throughput">0%</div>
-                            <div class="analytics-bar"><div class="analytics-bar-fill" id="bar-throughput" style="width: 0%; background: var(--green-core);"></div></div>
-                        </div>
-                    </div>
-                    <div class="analytics-item skeleton" data-tooltip="Success rate of active AI nudges routing crowd">
-                        <div class="analytics-icon" style="background: rgba(167,139,250,0.1);">🔀</div>
-                        <div class="analytics-content">
-                            <div class="analytics-label">Reroute Efficiency</div>
-                            <div class="analytics-value" id="analytics-reroute">0%</div>
-                            <div class="analytics-bar"><div class="analytics-bar-fill" id="bar-reroute" style="width: 0%; background: var(--purple-core);"></div></div>
-                        </div>
-                    </div>
+            <!-- Scenario Controls -->
+            <div class="panel scenario-section">
+                <div class="panel-title"><span class="dot" style="background: var(--yellow-core);"></span>SCENARIO CONTROL</div>
+                <div class="scenario-grid">
+                    <button class="scenario-btn active" id="btn-auto" onclick="setScenario('auto')">⚡ Auto Mode</button>
+                    <button class="scenario-btn" id="btn-entry" onclick="setScenario('entry')">🚪 Entry Rush</button>
+                    <button class="scenario-btn" id="btn-halftime" onclick="setScenario('halftime')">⏸ Halftime</button>
+                    <button class="scenario-btn danger" id="btn-emergency" onclick="setScenario('emergency')" style="display:none;">🚨 Evacuate</button> <!-- Hidden since quick action exists -->
+                    <button class="scenario-btn" id="btn-whatif" onclick="openWhatIfModal()" style="grid-column: span 2; background: rgba(0,212,255,0.05); border-color: var(--cyan-core); color: var(--cyan-core);">🧪 What-If Analysis</button>
                 </div>
             </div>
+
+            <!-- Terminal Input -->
+            <div class="panel canvas-ai-decision" id="ai-decision-box" style="position:relative; width:auto; bottom:auto; right:auto; border:none; box-shadow:none; padding:0; flex:none; display:flex;">
+                <div class="ctrl-header">
+                    <div class="ctrl-header-left">
+                        <div class="ctrl-status-dot" id="ctrl-status-dot"></div>
+                        ⚡ OPERATOR COMMAND
+                    </div>
+                </div>
+                <div class="ctrl-chips">
+                    <button class="ctrl-chip evac" onclick="execChip('evacuate')">🚨 EVACUATE</button>
+                    <button class="ctrl-chip surge" onclick="execChip('increase density')">+SURGE</button>
+                    <button class="ctrl-chip gate" onclick="execChip('close gate A')">CLOSE A</button>
+                    <button class="ctrl-chip gate" onclick="execChip('open gate A')">OPEN A</button>
+                    <button class="ctrl-chip clear" onclick="execChip('reset')">RESET</button>
+                </div>
+                <div class="ctrl-input-row" style="background:transparent; border-top:none;">
+                    <span class="ctrl-prompt">›</span>
+                    <input id="ctrl-input" class="ctrl-input" type="text" placeholder="close gate B | evacuate | surge zone C3…" autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter') execCommand()" />
+                    <button class="ctrl-exec-btn" id="ctrl-exec-btn" onclick="execCommand()">EXEC</button>
+                </div>
+            </div>
+            
+            <div style="flex:1;"></div>
         </div>
 
         <!-- ━━━ CENTER — GOOGLE MAPS DIGITAL TWIN ━━━ -->
-        <div class="center-panel panel">
-            <div class="map-twin-container">
+        <div class="center-panel panel" style="padding:0; overflow:hidden;">
+            <div class="map-twin-container" style="border:none;">
                 <div class="map-twin-header">
                     <div class="map-twin-title">
                         <span class="dot" style="background: var(--cyan-core); box-shadow: 0 0 10px rgba(0,212,255,0.8);"></span>
@@ -1751,7 +2048,7 @@
                     </div>
                 </div>
 
-                <!-- Map container -->
+                <!-- Map / Simulation container -->
                 <div id="twin-map" style="position:relative;">
 
                     <!-- API Key Injected via Backend on page load -->
@@ -1760,8 +2057,26 @@
                         const INJECTED_MAPS_KEY = "[[MAPS_API_KEY]]";
                     </script>
 
-                    <!-- Floating overlay stats on top of map -->
-                    <div class="map-overlay-stats" id="map-overlay-stats" style="display:none;">
+                    <!-- Canvas simulation — renders immediately, no API key needed -->
+                    <canvas id="sim-canvas" style="position:absolute;inset:0;width:100%;height:100%;display:block;z-index:2;"></canvas>
+
+                    <!-- Simulation Running Feedback -->
+                    <div class="sim-feedback-badge" id="sim-feedback">
+                        <svg class="sim-spinner" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10" stroke="rgba(0, 212, 255, 0.1)" stroke-width="3"></circle>
+                            <path d="M12 2a10 10 0 0 1 10 10" stroke="var(--cyan-core)" stroke-width="3" stroke-linecap="round"></path>
+                        </svg>
+                        SIMULATION RUNNING
+                    </div>
+
+                    <!-- Real-Time Alert Banner -->
+                    <div id="sim-alert-banner" style="display:none; position:absolute; top: 60px; left: 50%; transform: translateX(-50%); background: rgba(239, 68, 68, 0.95); border: 1px solid var(--red-glow); box-shadow: 0 0 30px rgba(239, 68, 68, 0.6); padding: 12px 24px; border-radius: 8px; z-index: 60; color: white; font-family: 'Orbitron', sans-serif; text-align: center; backdrop-filter: blur(5px);">
+                        <div style="font-weight: 700; font-size: 14px; letter-spacing: 1px; margin-bottom: 4px;">⚠️ HIGH CONGESTION ALERT</div>
+                        <div id="sim-alert-message" style="font-size: 11px; font-family: 'JetBrains Mono', monospace; opacity: 0.9;"></div>
+                    </div>
+
+                    <!-- Floating overlay stats -->
+                    <div class="map-overlay-stats" id="map-overlay-stats" style="display:flex;">
                         <div class="map-overlay-stat">
                             <span class="lbl">STADIUM:</span>
                             <span class="val">Narendra Modi, Ahmedabad</span>
@@ -1774,145 +2089,42 @@
                             <span class="lbl">AGENTS:</span>
                             <span class="val" id="overlay-agents">0</span>
                         </div>
-                        <div class="map-overlay-stat">
-                            <span class="lbl">TIME SAVED:</span>
-                            <span class="val" id="overlay-time-saved">0s</span>
-                        </div>
                     </div>
 
-                    <div class="map-phase-badge" id="map-phase-badge" style="display:none;">INITIALIZING</div>
-
-                    <!-- AI decision box (reused on map) -->
-                    <div class="canvas-ai-decision" id="ai-decision-box" style="display:none;">
-                        <div class="ai-header">
-                            <span class="ai-icon">🧠</span>
-                            AI TACTICAL DECISION
-                        </div>
-                        <div class="ai-content" id="ai-decision-text">
-                            Analyzing venue topology and flow rates...
-                        </div>
-                        <div class="ai-expl" id="ai-decision-expl">
-                            Initializing shadow model evaluation constraints.
-                        </div>
-                        <ul class="ai-factors" id="ai-decision-factors">
-                            <li>Building spatial node graphs</li>
-                        </ul>
-                        <div class="ai-conf" id="ai-decision-conf" style="color: var(--text-secondary);">
-                            Confidence: 0%
-                        </div>
-                    </div>
+                    <div class="map-phase-badge" id="map-phase-badge" style="display:block;">INITIALIZING</div>
                 </div>
             </div>
         </div>
 
-        <!-- ━━━ RIGHT PANEL ━━━ -->
+        <!-- ━━━ RIGHT PANEL - RESULTS ━━━ -->
         <div class="right-panel">
-            <!-- Scenario Controls -->
-            <div class="panel scenario-section">
-                <div class="panel-title"><span class="dot" style="background: var(--yellow-core);"></span>SCENARIO CONTROL</div>
-                <div class="scenario-grid">
-                    <button class="scenario-btn active" id="btn-auto" onclick="setScenario('auto')">⚡ Auto Mode</button>
-                    <button class="scenario-btn" id="btn-entry" onclick="setScenario('entry')">🚪 Entry Rush</button>
-                    <button class="scenario-btn" id="btn-halftime" onclick="setScenario('halftime')">⏸ Halftime</button>
-                    <button class="scenario-btn danger" id="btn-emergency" onclick="setScenario('emergency')">🚨 Evacuate</button>
-                    <button class="scenario-btn" id="btn-whatif" onclick="openWhatIfModal()" style="grid-column: span 2; background: rgba(0,212,255,0.05); border-color: var(--cyan-core); color: var(--cyan-core);">🧪 What-If Analysis</button>
-                </div>
-            </div>
 
-            <!-- Route Controls -->
-            <div class="panel route-section">
-                <div class="panel-title"><span class="dot" style="background: var(--green-core);"></span>SMART ROUTING</div>
-                <div class="route-controls">
-                    <input type="text" class="route-input" id="route-start" value="A1" maxlength="2" placeholder="FROM" />
-                    <div class="route-arrow">→</div>
-                    <input type="text" class="route-input" id="route-end" value="E5" maxlength="2" placeholder="TO" />
-                </div>
-                <div class="route-result">
-                    <div class="route-path" id="route-path"></div>
-                    <div class="time-saved-box" id="time-saved-box">⚡ Calculating...</div>
-                </div>
-            </div>
-
-            <!-- Predictive Intelligence -->
-            <div class="panel prediction-section">
-                <div class="panel-title"><span class="dot" style="background: var(--orange-core);"></span>PREDICTIVE CROWD INTELLIGENCE ENGINE</div>
-                <div class="slider-list">
-                    <div class="slider-item">
-                        <div class="slider-header">
-                            <span class="slider-label" style="color: var(--orange-core);">Timeline Horizon</span>
-                            <span class="slider-value" id="val-timeline" style="color: var(--text-primary); font-weight: 700;">LIVE</span>
+            <!-- Execution Log -->
+            <div class="panel" style="flex:1; display:flex; flex-direction:column;">
+                <div class="terminal-header" style="border-radius:10px 10px 0 0;">
+                    <div class="terminal-header-left">
+                        <div class="terminal-dots">
+                            <div class="terminal-dot red"></div><div class="terminal-dot yellow"></div><div class="terminal-dot green"></div>
                         </div>
-                        <input type="range" min="0" max="120" value="0" step="30" id="slider-timeline" oninput="updateTimeline(this.value)" style="accent-color: var(--orange-core);" />
+                        <div class="terminal-title">Event Log</div>
+                    </div>
+                    <div class="terminal-stats">
+                        <div class="terminal-stat">Events: <span class="val" id="log-count">0</span></div>
+                    </div>
+                </div>
+                <div class="terminal-body" id="terminal-body" style="flex:1; max-height:none; border-radius:0 0 10px 10px;">
+                    <div class="log-entry">
+                        <span class="log-time">00:00:00</span>
+                        <span class="log-tag info">SYS</span>
+                        <span class="log-msg">NeuroVenue OS Command Center initialized<span class="log-cursor"></span></span>
                     </div>
                 </div>
             </div>
-
-            <!-- Sliders -->
-            <div class="panel sliders-section">
-                <div class="panel-title"><span class="dot"></span>SIMULATION PARAMS</div>
-                <div class="slider-list">
-                    <div class="slider-item">
-                        <div class="slider-header">
-                            <span class="slider-label">Agent Count</span>
-                            <span class="slider-value" id="val-agents">150</span>
-                        </div>
-                        <input type="range" min="50" max="400" value="150" id="slider-agents" oninput="document.getElementById('val-agents').textContent=this.value" />
-                    </div>
-                    <div class="slider-item">
-                        <div class="slider-header">
-                            <span class="slider-label">Sim Speed</span>
-                            <span class="slider-value" id="val-speed">1.0x</span>
-                        </div>
-                        <input type="range" min="1" max="30" value="10" id="slider-speed" oninput="document.getElementById('val-speed').textContent=(this.value/10).toFixed(1)+'x'" />
-                    </div>
-                    <div class="slider-item">
-                        <div class="slider-header">
-                            <span class="slider-label">Crowd Pressure</span>
-                            <span class="slider-value" id="val-pressure">50%</span>
-                        </div>
-                        <input type="range" min="0" max="100" value="50" id="slider-pressure" oninput="document.getElementById('val-pressure').textContent=this.value+'%'" />
-                    </div>
-                </div>
-            </div>
-
-            <!-- AI Command Engine -->
-            <div class="panel cmd-section">
-                <div class="panel-title"><span class="dot" style="background: var(--cyan-core);"></span>AI COMMAND ENGINE</div>
-                <div class="cmd-interface">
-                    <div class="cmd-history" id="cmd-history">
-                        <div class="cmd-line system">Waiting for execution directive...</div>
-                    </div>
-                    <div class="cmd-input-row">
-                        <span class="cmd-prompt">_&gt;</span>
-                        <input type="text" id="ai-cmd-input" placeholder="Execute system command..." onkeypress="handleCommandKeyPress(event)" />
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ━━━ FOOTER — TERMINAL ━━━ -->
-        <div class="footer panel">
-            <div class="terminal-header">
-                <div class="terminal-header-left">
-                    <div class="terminal-dots">
-                        <div class="terminal-dot red"></div>
-                        <div class="terminal-dot yellow"></div>
-                        <div class="terminal-dot green"></div>
-                    </div>
-                    <div class="terminal-title">Event Log — neurovenue.local</div>
-                </div>
-                <div class="terminal-stats">
-                    <div class="terminal-stat">Events: <span class="val" id="log-count">0</span></div>
-                    <div class="terminal-stat">Uptime: <span class="val" id="uptime">00:00:00</span></div>
-                </div>
-            </div>
-            <div class="terminal-body" id="terminal-body">
-                <div class="log-entry">
-                    <span class="log-time">00:00:00</span>
-                    <span class="log-tag info">SYS</span>
-                    <span class="log-msg">NeuroVenue OS Command Center v2.0 initialized<span class="log-cursor"></span></span>
-                </div>
-            </div>
+            
+            <!-- Hidden ctrl-log to prevent JS errors if anything still uses it -->
+            <div id="ctrl-log" style="display:none;"></div>
+            <span id="uptime" style="display:none;"></span>
+            
         </div>
     </div>
 
@@ -3088,16 +3300,20 @@
         //  CANVAS SETUP
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         function resizeCanvas() {
+            if (!canvas) return;
+            // #twin-map is position:relative + flex:1, read actual rendered size
             const wrapper = canvas.parentElement;
             const dpr = window.devicePixelRatio || 1;
-            simW = wrapper.clientWidth;
-            simH = wrapper.clientHeight;
-            canvas.width = simW * dpr;
+            simW = wrapper.offsetWidth  || wrapper.clientWidth  || 800;
+            simH = wrapper.offsetHeight || wrapper.clientHeight || 600;
+            canvas.width  = simW * dpr;
             canvas.height = simH * dpr;
-            canvas.style.width = simW + 'px';
+            canvas.style.width  = simW + 'px';
             canvas.style.height = simH + 'px';
-            ctx.setTransform(1, 0, 0, 1, 0, 0);
-            ctx.scale(dpr, dpr);
+            if (ctx) {
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.scale(dpr, dpr);
+            }
         }
 
         function initAgents(count) {
@@ -3223,15 +3439,52 @@
                 previousZoneData = JSON.parse(JSON.stringify(data.zones));
 
                 const hotZones = data.zones.filter(z => z.density > 80);
+                
+                // Update Results Panel
+                const totalDensity = data.zones.reduce((sum, z) => sum + z.density, 0);
+                const avgDensity = Math.round(totalDensity / (data.zones.length || 1));
+                
+                let riskLevel = "LOW";
+                let riskClass = "mrp-risk-low";
+                if (avgDensity > 75 || hotZones.length > 3) {
+                    riskLevel = "CRITICAL";
+                    riskClass = "mrp-risk-high";
+                } else if (avgDensity > 50 || hotZones.length > 0) {
+                    riskLevel = "ELEVATED";
+                    riskClass = "mrp-risk-med";
+                }
+                
+                document.getElementById('mrp-tick').textContent = `T+${data.tick}`;
+                document.getElementById('mrp-score').textContent = `${avgDensity}/100`;
+                const riskEl = document.getElementById('mrp-risk');
+                riskEl.textContent = riskLevel;
+                riskEl.className = `mrp-value ${riskClass}`;
+                
+                document.getElementById('mrp-zones').textContent = hotZones.length > 0 
+                    ? hotZones.map(z => z.id).join(', ') 
+                    : "None detected";
+
+                const alertBanner = document.getElementById('sim-alert-banner');
+                const alertMsg = document.getElementById('sim-alert-message');
+
                 if (hotZones.length > 0 || surgeDetected) {
                     if (hotZones.length > 0) {
                         addLog('warn', `${hotZones.length} zone(s) critical density: ${hotZones.map(z => z.id).join(', ')}`);
+                        if (alertBanner) {
+                            alertBanner.style.display = 'block';
+                            alertBanner.style.animation = 'dangerPulse 1.5s infinite';
+                            alertMsg.textContent = `Risk Level: ${riskLevel.toUpperCase()} | Affected Zones: ${hotZones.map(z => z.id).join(', ')}`;
+                        }
                     }
                     if (!isAlerting) {
                         playAlertSound();
                         isAlerting = true;
                     }
                 } else {
+                    if (alertBanner) {
+                        alertBanner.style.display = 'none';
+                        alertBanner.style.animation = 'none';
+                    }
                     addLog('info', `Tick ${data.tick} — ${phase} — all zones nominal`);
                     if (isAlerting) {
                         isAlerting = false;
@@ -3243,11 +3496,9 @@
                     addLog('route', `Route: ${data.route.path.join(' → ')} | Saved ${data.route.time_saved}s`);
                 }
 
-                // AI Decision Box Integration
-                if (data.nudge && typeof data.nudge === 'object') {
+                // AI Advisory — auto-route to control log as system suggestion
+                if (data.nudge && typeof data.nudge === 'object' && data.nudge.action) {
                     updateAiDecisionBox(data.nudge);
-                } else if (data.nudge) {
-                    updateAiDecisionBox({action: data.nudge.split('\n')[0]}); // Fallback
                 }
                 
                 // Keep Live indicator green
@@ -3268,64 +3519,189 @@
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  AI DECISION ENGINE
+        //  OPERATOR CONTROL TERMINAL ENGINE
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        function updateAiDecisionBox(nudgeData) {
-            const box = document.getElementById('ai-decision-box');
-            const text = document.getElementById('ai-decision-text');
-            const expl = document.getElementById('ai-decision-expl');
-            const factors = document.getElementById('ai-decision-factors');
-            const conf = document.getElementById('ai-decision-conf');
-            
-            if (!box || !text) return;
-            const actionText = nudgeData.action || '';
-            if (text.textContent === actionText) return;
-            
-            box.classList.add('updating');
-            
-            if (actionText.includes("TACTICAL ALERT:")) {
-                box.style.borderColor = "var(--red-core)";
-                box.style.boxShadow = "0 0 15px rgba(239, 68, 68, 0.4)";
-                text.style.color = "var(--red-core)";
-            } else {
-                box.style.borderColor = "rgba(255,255,255,0.1)";
-                box.style.boxShadow = "none";
-                text.style.color = "var(--cyan-core)";
-            }
 
-            setTimeout(() => {
-                text.textContent = actionText;
-                
-                if (expl && nudgeData.explanation) {
-                    expl.textContent = nudgeData.explanation;
-                }
-                
-                if (factors && nudgeData.factors && Array.isArray(nudgeData.factors)) {
-                    factors.innerHTML = '';
-                    nudgeData.factors.forEach(f => {
-                        const li = document.createElement('li');
-                        li.textContent = f;
-                        factors.appendChild(li);
-                    });
-                }
-                
-                if (conf && nudgeData.confidence !== undefined) {
-                    conf.textContent = `Confidence: ${nudgeData.confidence}%`;
-                    if (nudgeData.confidence >= 90) {
-                        conf.style.color = "var(--green-core)";
-                    } else if (nudgeData.confidence >= 70) {
-                        conf.style.color = "var(--orange-core)";
-                    } else {
-                        conf.style.color = "var(--text-secondary)";
+        // baselines for congestion delta comparison
+        let ctrlBaselineCongestion = null;
+        let ctrlLogHistory = []; // [{action, impact, deltaClass}]
+        const CTRL_MAX_LOG = 8;
+
+        // Capture congestion baseline before command fires
+        function ctrlGetCurrentPeakCongestion() {
+            if (!lastZoneData || lastZoneData.length === 0) return null;
+            return Math.max(...lastZoneData.map(z => z.density || 0));
+        }
+
+        // Write a row to the execution log (Unified into main Event Log)
+        function ctrlLogRow(actionHtml, deltaText, deltaClass) {
+            // Strip HTML from actionHtml for cleaner plain text log, or keep basic formatting
+            let cleanAction = actionHtml.replace(/<[^>]*>?/gm, ''); 
+            // Also append the delta
+            let msg = `${cleanAction} [${deltaText}]`;
+            
+            // Map the deltaClass to an appropriate tag
+            let tag = 'cmd';
+            if (deltaClass === 'pos') tag = 'warn';
+            if (deltaClass === 'neg') tag = 'success';
+            
+            addLog(tag, msg);
+        }
+
+        // Main command executor
+        async function execCommand() {
+            const input = document.getElementById('ctrl-input');
+            const btn   = document.getElementById('ctrl-exec-btn');
+            const cmd   = (input.value || '').trim();
+            if (!cmd) return;
+
+            // Visual: button → executing state
+            btn.classList.add('executing');
+            btn.textContent = '...';
+            input.disabled = true;
+
+            // Snapshot congestion before
+            ctrlBaselineCongestion = ctrlGetCurrentPeakCongestion();
+
+            try {
+                const res = await fetch('/api/command', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({command: cmd}),
+                });
+                const data = await res.json();
+
+                // Refresh simulation immediately so visual updates in ≤400ms
+                await fetchData();
+
+                // Compute actual congestion delta
+                const newPeak = ctrlGetCurrentPeakCongestion();
+                let deltaText = 'NO CHANGE';
+                let deltaClass = 'neut';
+                if (ctrlBaselineCongestion !== null && newPeak !== null) {
+                    const diff = Math.round(newPeak - ctrlBaselineCongestion);
+                    if (diff > 0) {
+                        deltaText = `+${diff}% CONG`;
+                        deltaClass = 'pos';
+                    } else if (diff < 0) {
+                        deltaText = `${diff}% CONG`;
+                        deltaClass = 'neg';
                     }
                 }
 
-                box.classList.remove('updating');
-                if (actionText.includes("TACTICAL ALERT:")) {
-                    addLog('ai', `Analysis: ${actionText}`);
-                    showToast(actionText);
+                // Build action HTML from response
+                const actionText = data.action || cmd;
+                const impact     = data.numeric_impact || '';
+                const status     = data.status || 'executed';
+
+                let actionHtml;
+                if (status === 'executed' || status === 'success') {
+                    actionHtml = `<span class="cmd-verb">EXEC &rsaquo;</span> ${actionText}`;
+                    if (impact) actionHtml += `<br><span style="color:rgba(0,212,255,0.55);font-size:9px;">${impact}</span>`;
+                    addLog('ai', `CMD: ${actionText} | ${impact}`);
+                } else if (status === 'unrecognized') {
+                    actionHtml = `<span style="color:#f97316">UNKNOWN:</span> ${cmd}`;
+                    deltaText  = 'ERR';
+                    deltaClass = 'pos';
+                } else {
+                    actionHtml = `<span style="color:#ef4444">FAILED:</span> ${data.action || cmd}`;
+                    deltaText  = 'FAIL';
+                    deltaClass = 'pos';
                 }
-            }, 300);
+
+                ctrlLogRow(actionHtml, deltaText, deltaClass);
+
+                // Update mode badge
+                const badge = document.getElementById('ctrl-mode-badge');
+                if (badge) {
+                    if (cmd.includes('evacuat')) badge.textContent = 'EVAC MODE';
+                    else if (cmd.includes('reset'))  badge.textContent = 'LIVE / AUTO';
+                    else badge.textContent = 'LIVE / CMD';
+                }
+
+            } catch (err) {
+                ctrlLogRow(`<span style="color:#ef4444">NET ERR:</span> ${cmd}`, 'FAIL', 'pos');
+                addLog('error', `Command failed: ${err.message}`);
+            } finally {
+                btn.classList.remove('executing');
+                btn.textContent = 'EXEC';
+                input.disabled = false;
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        // Chip shortcut — pre-fill and fire
+        function execChip(cmd) {
+            const input = document.getElementById('ctrl-input');
+            if (input) input.value = cmd;
+            execCommand();
+        }
+
+        // Quick Action Panel Button Fire
+        async function qaFire(btnEl, cmd, resId) {
+            btnEl.classList.add('firing');
+            const resEl = document.getElementById(resId);
+            if (resEl) {
+                resEl.textContent = '...';
+                resEl.style.backgroundColor = '';
+                resEl.style.color = '';
+                resEl.classList.add('visible');
+            }
+
+            const input = document.getElementById('ctrl-input');
+            if (input) input.value = cmd;
+            await execCommand();
+
+            const logRows = document.querySelectorAll('.ctrl-log-row');
+            if (logRows.length > 0 && resEl) {
+                const deltaEl = logRows[logRows.length - 1].querySelector('.ctrl-log-delta');
+                if (deltaEl) {
+                    resEl.textContent = deltaEl.textContent;
+                    // match the styling class
+                    resEl.className = 'qa-btn-result visible';
+                    if (deltaEl.classList.contains('pos')) resEl.style.color = "var(--red-core)";
+                    else if (deltaEl.classList.contains('neg')) resEl.style.color = "var(--green-core)";
+                    else resEl.style.color = "var(--text-secondary)";
+                }
+            }
+
+            setTimeout(() => {
+                btnEl.classList.remove('firing');
+                setTimeout(() => {
+                    if (resEl) resEl.classList.remove('visible');
+                }, 4000);
+            }, 600);
+        }
+
+        // AI advisory from server nudge — shown as system row (not chatbot)
+        let lastAdvisoryAction = '';
+        function updateAiDecisionBox(nudgeData) {
+            const actionText = (nudgeData.action || '').replace(/^TACTICAL ALERT:\s*/i, '');
+            if (!actionText || actionText === lastAdvisoryAction) return;
+            lastAdvisoryAction = actionText;
+
+            const isCritical = (nudgeData.action || '').includes('TACTICAL ALERT');
+            const box = document.getElementById('ai-decision-box');
+
+            // Flash border on critical advisory
+            if (box && isCritical) {
+                box.style.borderColor = 'rgba(239,68,68,0.6)';
+                box.style.boxShadow   = '0 0 20px rgba(239,68,68,0.25)';
+                setTimeout(() => {
+                    box.style.borderColor = 'rgba(0,212,255,0.4)';
+                    box.style.boxShadow   = '';
+                }, 3000);
+                addLog('ai', `ADVISORY: ${actionText}`);
+                showToast(`⚠️ ${actionText}`);
+            }
+
+            // Render advisory as a system row in the log
+            const conf = nudgeData.confidence || '';
+            const confStr = conf ? `<span style="color:rgba(0,212,255,0.5);font-size:9px;">${conf}% conf</span>` : '';
+            const html = `<span style="color:${isCritical ? '#ef4444' : 'rgba(255,255,255,0.45)'};">SYS &rsaquo;</span> ${actionText} ${confStr}`;
+            const impact = nudgeData.factors && nudgeData.factors[1] ? nudgeData.factors[1] : '';
+            ctrlLogRow(html, isCritical ? '⚠ ALERT' : 'ADVISORY', isCritical ? 'pos' : 'neut');
         }
 
         function updateTimeline(val) {
@@ -3358,20 +3734,27 @@
         function boot() {
             initHeatmap();
 
-            addLog('info', 'Subsystems initializing...');
-            setTimeout(() => addLog('info', 'Crowd simulation engine online'), 300);
-            setTimeout(() => addLog('ai', 'AI behavioral model loaded'), 600);
-            setTimeout(() => addLog('route', 'Smart routing algorithm ready'), 900);
+            // ── Start canvas simulation immediately — no API key needed ──
+            // Defer first resize to allow flex layout to settle
+            requestAnimationFrame(() => {
+                resizeCanvas();
+                initAgents(parseInt(document.getElementById('slider-agents').value));
+                render();
+            });
+            window.addEventListener('resize', resizeCanvas);
+
+            addLog('info', 'NeuroVenue OS booting — all subsystems online');
+            setTimeout(() => addLog('info', 'Canvas simulation engine active @ 60 FPS'), 200);
+            setTimeout(() => addLog('ai', 'AI behavioral model loaded — multi-agent boids active'), 500);
+            setTimeout(() => addLog('route', 'Smart routing algorithm ready'), 800);
             setTimeout(() => {
-                addLog('info', 'All systems operational — entering live mode');
+                addLog('info', 'LIVE mode — fetching real-time crowd data');
                 fetchData();
-            }, 1200);
+            }, 1000);
 
             setInterval(fetchData, REFRESH_INTERVAL);
 
-            // AI Decisions now triggered by API payload natively.
-
-            // Real-time jitter effect
+            // Real-time jitter effect on analytics
             setInterval(() => {
                 if (!lastZoneData || lastZoneData.length === 0) return;
 
@@ -3391,16 +3774,18 @@
                 }
             }, 600);
 
-            // Auto-load Injected Key if present
+            // ── Auto-load Google Maps satellite layer if API key is present ──
+            // Map loads ON TOP of canvas; canvas remains visible as fallback/overlay
             if (typeof INJECTED_MAPS_KEY !== 'undefined' && INJECTED_MAPS_KEY.startsWith('AIza')) {
-                addLog('info', 'Secure API Key injected from environment. Re-routing twin logic...');
+                addLog('info', '🗺️ Maps API key detected — loading satellite twin layer...');
                 initMapsWithKey(INJECTED_MAPS_KEY);
             } else {
-                // Auto-load from URL param as fallback
                 const urlKey = new URLSearchParams(window.location.search).get('maps_key');
                 if (urlKey) {
-                    addLog('info', 'API Key detected in URL parameters...');
+                    addLog('info', '🗺️ Maps API key via URL — loading satellite twin layer...');
                     initMapsWithKey(urlKey);
+                } else {
+                    addLog('info', '📡 Running in simulation-only mode — canvas twin active');
                 }
             }
         }
@@ -3495,67 +3880,179 @@
         return pts;
     }
 
-    // ─── Map initialisation ───────────────────────────────────────────────────
+    // ─── Congestion rings overlay (canvas-based, non-blocking) ──────────────
+    let congestionOverlay = null;
+    let congestionRingData = []; // [{lat, lng, intensity}]
+    let congRingFrame = 0;
+
+    function initCongestionOverlay() {
+        const CongOverlay = function(map) {
+            this.setMap(map);
+        };
+        CongOverlay.prototype = new google.maps.OverlayView();
+        CongOverlay.prototype.onAdd = function() {
+            const canvas = document.createElement('canvas');
+            canvas.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:20;';
+            this._canvas = canvas;
+            this.getPanes().overlayLayer.appendChild(canvas);
+            this._animating = true;
+            this._animate();
+        };
+        CongOverlay.prototype._animate = function() {
+            if (!this._animating) return;
+            this._drawRings();
+            congRingFrame++;
+            requestAnimationFrame(() => this._animate());
+        };
+        CongOverlay.prototype._drawRings = function() {
+            const canvas = this._canvas;
+            const projection = this.getProjection();
+            if (!projection || !canvas) return;
+
+            // Size canvas to map container
+            const mapDiv = gmap.getDiv();
+            const w = mapDiv.offsetWidth, h = mapDiv.offsetHeight;
+            if (canvas.width !== w) canvas.width = w;
+            if (canvas.height !== h) canvas.height = h;
+
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, w, h);
+
+            const t = congRingFrame;
+            congestionRingData.forEach(pt => {
+                const px = projection.fromLatLngToDivPixel(new google.maps.LatLng(pt.lat, pt.lng));
+                if (!px) return;
+                const intensity = pt.intensity;
+                const baseR = 28 + intensity * 32; // 28–60px
+                const pulse = 1 + Math.sin(t * 0.05 + pt.lat * 100) * 0.18;
+                const r = baseR * pulse;
+
+                // Outer glow ring
+                const g = ctx.createRadialGradient(px.x, px.y, r * 0.3, px.x, px.y, r);
+                const alpha = 0.12 + intensity * 0.25;
+                if (intensity > 0.7) {
+                    g.addColorStop(0, `rgba(239,68,68,${alpha})`);
+                    g.addColorStop(0.5, `rgba(239,68,68,${alpha * 0.5})`);
+                    g.addColorStop(1, 'rgba(239,68,68,0)');
+                } else if (intensity > 0.35) {
+                    g.addColorStop(0, `rgba(249,115,22,${alpha})`);
+                    g.addColorStop(0.5, `rgba(249,115,22,${alpha * 0.5})`);
+                    g.addColorStop(1, 'rgba(249,115,22,0)');
+                } else {
+                    g.addColorStop(0, `rgba(251,191,36,${alpha * 0.7})`);
+                    g.addColorStop(0.5, `rgba(251,191,36,${alpha * 0.3})`);
+                    g.addColorStop(1, 'rgba(251,191,36,0)');
+                }
+                ctx.beginPath();
+                ctx.arc(px.x, px.y, r, 0, Math.PI * 2);
+                ctx.fillStyle = g;
+                ctx.fill();
+
+                // Crisp ring border for critical zones
+                if (intensity > 0.6) {
+                    ctx.beginPath();
+                    ctx.arc(px.x, px.y, r * 0.55, 0, Math.PI * 2);
+                    const edgeAlpha = 0.5 + Math.sin(t * 0.08) * 0.2;
+                    ctx.strokeStyle = `rgba(239,68,68,${edgeAlpha})`;
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                }
+            });
+        };
+        CongOverlay.prototype.draw = function() {}; // handled in animate
+        CongOverlay.prototype.onRemove = function() {
+            this._animating = false;
+            if (this._canvas) this._canvas.parentNode.removeChild(this._canvas);
+        };
+        congestionOverlay = new CongOverlay(gmap);
+    }
+
+    // ─── Gate label overlays (floating HTML badges) ───────────────────────────
+    function createGateLabelOverlay(gm, map) {
+        const isPrimary = ['Gate A (North)', 'Gate B (NE)', 'Gate C (East)', 'Gate D (SE)',
+                           'Gate E (South)', 'Gate F (SW)', 'Gate G (West)', 'Gate H (NW)'].includes(gm.id);
+        const label = gm.id.replace(/\s*\(.*\)/, ''); // "Gate A", "Gate B", etc.
+        const color = gm.type === 'gate' ? '#00d4ff' : gm.type === 'exit' ? '#fbbf24' : '#a78bfa';
+        const bgColor = gm.type === 'gate' ? 'rgba(0,212,255,0.15)' : gm.type === 'exit' ? 'rgba(251,191,36,0.15)' : 'rgba(167,139,250,0.15)';
+        const borderColor = gm.type === 'gate' ? 'rgba(0,212,255,0.45)' : gm.type === 'exit' ? 'rgba(251,191,36,0.45)' : 'rgba(167,139,250,0.45)';
+
+        const div = document.createElement('div');
+        div.style.cssText = `
+            position: absolute;
+            pointer-events: auto;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            transform: translate(-50%, -100%);
+        `;
+        div.innerHTML = `
+            <div style="
+                font-family: 'JetBrains Mono', monospace;
+                font-size: ${isPrimary ? '10px' : '9px'};
+                font-weight: 700;
+                color: ${color};
+                background: ${bgColor};
+                border: 1px solid ${borderColor};
+                border-radius: 4px;
+                padding: 2px 6px;
+                white-space: nowrap;
+                backdrop-filter: blur(4px);
+                text-shadow: 0 0 8px ${color};
+                letter-spacing: 0.5px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+            ">${label}</div>
+            <div style="
+                width: ${isPrimary ? '10px' : '8px'};
+                height: ${isPrimary ? '10px' : '8px'};
+                border-radius: 50%;
+                background: ${color};
+                box-shadow: 0 0 ${isPrimary ? '10px' : '6px'} ${color};
+                border: 2px solid rgba(0,0,0,0.6);
+            "></div>
+        `;
+
+        const overlay = new google.maps.OverlayView();
+        overlay.onAdd = function() {
+            this.getPanes().overlayMouseTarget.appendChild(div);
+            div.addEventListener('click', () => {
+                addLog('info', `${gm.id} | Zone: ${gm.zone} | ${gm.type.toUpperCase()}`);
+            });
+        };
+        overlay.draw = function() {
+            const proj = this.getProjection();
+            const pt = proj.fromLatLngToDivPixel(new google.maps.LatLng(gm.lat, gm.lng));
+            if (pt) {
+                div.style.left = pt.x + 'px';
+                div.style.top  = pt.y + 'px';
+            }
+        };
+        overlay.onRemove = function() { div.parentNode && div.parentNode.removeChild(div); };
+        overlay.setMap(map);
+        return overlay;
+    }
+
+    // ─── Map initialisation (HIGH-REALISM DIGITAL TWIN) ──────────────────────
     function initDigitalTwinMap() {
         const mapEl = document.getElementById('twin-map');
 
+        // Use 'hybrid' = satellite imagery + road/label overlay for maximum realism
         gmap = new google.maps.Map(mapEl, {
             center: STADIUM_CENTER,
-            zoom: 17,
-            mapTypeId: 'satellite',
-            tilt: 0,
+            zoom: 18,          // High zoom — reveals stadium structure clearly
+            mapTypeId: google.maps.MapTypeId.HYBRID,
+            tilt: 0,           // Flat top-down for monitoring clarity
             disableDefaultUI: true,
             zoomControl: true,
             zoomControlOptions: {
                 position: google.maps.ControlPosition.BOTTOM_RIGHT,
             },
             gestureHandling: 'cooperative',
-            styles: [
-                { featureType: 'all', elementType: 'labels.text.fill',
-                  stylers: [{ color: '#8892b0' }] },
-                { featureType: 'road', elementType: 'geometry',
-                  stylers: [{ color: '#0f1424' }] },
-                { featureType: 'road', elementType: 'geometry.stroke',
-                  stylers: [{ color: '#212a37' }] },
-                { featureType: 'poi', elementType: 'all', stylers: [{ visibility: 'off' }] },
-            ],
+            mapTypeControl: false,
+            fullscreenControl: false,
+            streetViewControl: false,
         });
-
-        // Force Basic Map Visual Marker (requested anchor)
-        new google.maps.Marker({
-            position: { lat: 23.0915, lng: 72.5970 },
-            map: gmap,
-            title: "Narendra Modi Stadium"
-        });
-
-        // Fake but Believable Heatmap (Neural Fallback)
-        const neuralFallbackData = [
-            { location: new google.maps.LatLng(23.0915, 72.5970), weight: 0.8 },
-            { location: new google.maps.LatLng(23.0920, 72.5980), weight: 0.6 },
-            { location: new google.maps.LatLng(23.0905, 72.5965), weight: 0.7 },
-            { location: new google.maps.LatLng(23.0925, 72.5960), weight: 0.5 },
-            { location: new google.maps.LatLng(23.0910, 72.5950), weight: 0.4 }
-        ];
-
-        heatmapLayer = new google.maps.visualization.HeatmapLayer({
-            data: neuralFallbackData,
-            map: gmap,
-            radius: 40,
-            opacity: 0.8,
-            gradient: [
-                'rgba(0, 255, 255, 0)',
-                'rgba(0, 255, 255, 1)',
-                'rgba(0, 191, 255, 1)',
-                'rgba(0, 127, 255, 1)',
-                'rgba(0, 63, 255, 1)',
-                '#00ff88',
-                '#fcd34d',
-                '#f97316',
-                '#ef4444'
-            ]
-        });
-
-        mapLoaded = true;
 
         // ── Build zone polygons (5×5 grid) ──
         GRID_ROWS.forEach((row, ri) => {
@@ -3564,27 +4061,27 @@
                 const poly = new google.maps.Polygon({
                     paths: zoneBounds(ri, ci),
                     strokeColor: '#4f6ef7',
-                    strokeOpacity: 0.25,
+                    strokeOpacity: 0.35,
                     strokeWeight: 1.5,
                     fillColor: '#00ff88',
-                    fillOpacity: 0.05,
+                    fillOpacity: 0.04,
                     map: gmap,
                     zIndex: 1,
                 });
 
-                // Zone label overlay
+                // Zone density label overlay
                 const labelDiv = document.createElement('div');
                 labelDiv.style.cssText = `
                     font-family: 'JetBrains Mono', monospace;
                     font-size: 10px;
                     font-weight: 700;
-                    color: rgba(99,130,255,0.55);
+                    color: rgba(160,185,255,0.8);
                     text-align: center;
                     pointer-events: none;
-                    text-shadow: 0 0 6px rgba(0,0,0,0.9);
+                    text-shadow: 0 0 6px rgba(0,0,0,1), 0 0 12px rgba(0,0,0,0.8);
                     line-height: 1.2;
                 `;
-                labelDiv.innerHTML = `${zoneId}<br><span id="zone-density-${zoneId}" style="color:rgba(255,255,255,0.3);font-size:9px;">—</span>`;
+                labelDiv.innerHTML = `${zoneId}<br><span id="zone-density-${zoneId}" style="color:rgba(0,255,136,0.7);font-size:9px;">—</span>`;
 
                 const labelOverlay = new google.maps.OverlayView();
                 const ctr = zoneCenter(ri, ci);
@@ -3595,77 +4092,68 @@
                     const projection = this.getProjection();
                     const point = projection.fromLatLngToDivPixel(new google.maps.LatLng(ctr.lat, ctr.lng));
                     if (point) {
-                        labelDiv.style.left  = (point.x - 20) + 'px';
-                        labelDiv.style.top   = (point.y - 14) + 'px';
+                        labelDiv.style.left     = (point.x - 22) + 'px';
+                        labelDiv.style.top      = (point.y - 16) + 'px';
                         labelDiv.style.position = 'absolute';
                     }
                 };
                 labelOverlay.setMap(gmap);
-
                 zonePolygons[zoneId] = poly;
             });
         });
 
-        // ── Gate & exit markers ──
-        const gateIcon = (type) => ({
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: type === 'poi' ? 5 : 7,
-            fillColor: type === 'gate' ? '#00d4ff'
-                     : type === 'exit' ? '#fbbf24'
-                     : '#a78bfa',
-            fillOpacity: 0.9,
-            strokeColor: '#050810',
-            strokeWeight: 1.5,
-        });
-
+        // ── Gate markers — rich labeled HTML overlays ──
         GATE_MARKERS.forEach(gm => {
-            const marker = new google.maps.Marker({
-                position: { lat: gm.lat, lng: gm.lng },
-                map: gmap,
-                icon: gateIcon(gm.type),
-                title: gm.id,
-                zIndex: 5,
-            });
-
-            const infoWindow = new google.maps.InfoWindow({
-                content: `<div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#050810;padding:4px 6px;">
-                    <strong>${gm.id}</strong><br>Zone: ${gm.zone}
-                </div>`,
-            });
-
-            marker.addListener('click', () => {
-                infoWindow.open(gmap, marker);
-            });
-
-            gateMarkers.push(marker);
+            createGateLabelOverlay(gm, gmap);
         });
 
-        // ── Heatmap layer (crowd density) ──
+        // ── Crowd density heatmap layer — rich gradient, larger radius ──
+        // Boot with fallback data so something shows immediately
+        const fallbackHeatData = [
+            { location: new google.maps.LatLng(23.09320, 72.59700), weight: 0.85 },
+            { location: new google.maps.LatLng(23.09280, 72.59900), weight: 0.70 },
+            { location: new google.maps.LatLng(23.09150, 72.59987), weight: 0.55 },
+            { location: new google.maps.LatLng(23.08990, 72.59860), weight: 0.80 },
+            { location: new google.maps.LatLng(23.08924, 72.59700), weight: 0.75 },
+            { location: new google.maps.LatLng(23.09000, 72.59498), weight: 0.60 },
+            { location: new google.maps.LatLng(23.09150, 72.59413), weight: 0.50 },
+            { location: new google.maps.LatLng(23.09280, 72.59498), weight: 0.65 },
+            { location: new google.maps.LatLng(23.09150, 72.59700), weight: 0.40 }, // center/pitch
+        ];
+
         heatmapLayer = new google.maps.visualization.HeatmapLayer({
-            data: [],
+            data: fallbackHeatData,
             map: gmap,
-            radius: 45,
-            opacity: 0.65,
+            radius: 60,          // Larger radius — better coverage for stadium scale
+            opacity: 0.82,
             gradient: [
-                'rgba(0,255,136,0)',
-                'rgba(0,255,136,0.6)',
-                'rgba(251,191,36,0.7)',
-                'rgba(249,115,22,0.8)',
-                'rgba(239,68,68,0.9)',
-                'rgba(185,28,28,1)',
+                'rgba(0,255,136,0)',       // transparent at 0
+                'rgba(0,255,136,0.4)',     // calm green
+                'rgba(100,255,160,0.55)',
+                'rgba(200,255,80,0.65)',   // yellow-green
+                'rgba(251,191,36,0.75)',   // amber
+                'rgba(249,140,22,0.82)',   // orange
+                'rgba(239,80,40,0.90)',    // hot orange-red
+                'rgba(239,68,68,0.95)',    // red
+                'rgba(180,20,20,1)',       // deep critical red
             ],
         });
+
+        // ── Launch congestion ring overlay ──
+        initCongestionOverlay();
 
         mapLoaded = true;
 
         // Hide the notice and show overlays
-        document.getElementById('map-key-notice').style.display  = 'none';
+        // Hide canvas when real map loads (map renders inside twin-map, overlaying canvas)
+        const simCanvas = document.getElementById('sim-canvas');
+        if (simCanvas) simCanvas.style.zIndex = '0'; // push canvas behind map
         document.getElementById('map-overlay-stats').style.display = 'flex';
         document.getElementById('map-phase-badge').style.display   = 'block';
         document.getElementById('ai-decision-box').style.display   = 'flex';
 
-        addLog('info', '🗺️ Google Maps digital twin initialized — Narendra Modi Stadium');
-        addLog('info', 'Stadium: 23.09096°N 72.08518°E | Capacity: 132,000');
+        addLog('info', '🗺️  Google Maps Satellite Twin — Narendra Modi Stadium | Zoom 18');
+        addLog('info', 'High-realism mode: satellite + heatmap + gate labels + congestion rings');
 
         // Render with latest data if already fetched
         if (lastTwinZones.length > 0) updateMapTwin(lastTwinZones, lastTwinRoute);
@@ -3705,6 +4193,22 @@
 
         // ── Update heatmap ──
         heatmapLayer.setData(buildHeatmapData(zones));
+
+        // ── Update congestion rings ──
+        congestionRingData = [];
+        zones.forEach(z => {
+            if (z.density > 40) {
+                const ri = GRID_ROWS.indexOf(z.id[0]);
+                const ci = parseInt(z.id[1]) - 1;
+                if (ri < 0 || ci < 0) return;
+                const c = zoneCenter(ri, ci);
+                congestionRingData.push({
+                    lat: c.lat,
+                    lng: c.lng,
+                    intensity: Math.min(1, (z.density - 40) / 60),
+                });
+            }
+        });
 
         // ── Draw flow path ──
         drawMapFlowPath(routePath);
@@ -3855,11 +4359,12 @@
         }
     };
 
-    // Auto-restore key from sessionStorage
+    // Auto-restore key from sessionStorage (no UI input needed — purely for programmatic use)
     (function restoreKeyFromSession() {
         const saved = sessionStorage.getItem('nv_maps_key');
-        if (saved) {
-            document.getElementById('maps-api-key-input').value = saved;
+        if (saved && saved.startsWith('AIza')) {
+            // Key exists in session — attempt to load maps automatically
+            if (!mapLoaded) initMapsWithKey(saved);
         }
     })();
     </script>
