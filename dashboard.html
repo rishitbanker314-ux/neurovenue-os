@@ -2051,11 +2051,20 @@
                 <!-- Map / Simulation container -->
                 <div id="twin-map" style="position:relative;">
 
-                    <!-- API Key Injected via Backend on page load -->
                     <script>
                         // Placeholder replaced by server.py at runtime
                         const INJECTED_MAPS_KEY = "[[MAPS_API_KEY]]";
                     </script>
+
+                    <!-- User Suggested Frame Hack -->
+                    <iframe
+                      width="100%"
+                      height="100%"
+                      style="border:0; border-radius:12px; position:absolute; inset:0; z-index:0; filter: brightness(0.6) contrast(1.2) drop-shadow(0 0 20px rgba(0,212,255,0.2));"
+                      loading="lazy"
+                      allowfullscreen
+                      src="https://www.google.com/maps?q=Narendra+Modi+Stadium&output=embed">
+                    </iframe>
 
                     <!-- User Suggested Fallback / Loading Text -->
                     <div style="position: absolute; top: 150px; left: 50%; transform: translateX(-50%); text-align: center; color: rgba(255,255,255,0.6); font-family: 'Orbitron', sans-serif; z-index: 1; width: 100%;">
