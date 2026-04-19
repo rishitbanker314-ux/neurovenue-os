@@ -2302,16 +2302,20 @@
             animateValue('stat-avg-speed', prevStats.speed || 0, parseFloat(avgSpeed), 1000, true);
             animateValue('stat-confidence', prevStats.conf || 0, confidence, 1000, false, '%');
 
-            // Pulse on alerts
+            // Pulse on alerts (safe-guarded)
             const hotZonesEl = document.getElementById('stat-hot-zones');
-            if (hotZones > 0) hotZonesEl.classList.add('alert-pulse');
-            else hotZonesEl.classList.remove('alert-pulse');
+            if (hotZonesEl) {
+                if (hotZones > 0) hotZonesEl.classList.add('alert-pulse');
+                else hotZonesEl.classList.remove('alert-pulse');
+            }
             
             const confEl = document.getElementById('stat-confidence');
-            if (confidence < 85) confEl.classList.add('alert-pulse');
-            else confEl.classList.remove('alert-pulse');
+            if (confEl) {
+                if (confidence < 85) confEl.classList.add('alert-pulse');
+                else confEl.classList.remove('alert-pulse');
+            }
 
-            // Deltas
+            // Deltas (animateValue already null-guards)
             setDelta('delta-density', avgDensity, prevStats.density, true);
             setDelta('delta-hot', hotZones, prevStats.hot, true);
             setDelta('delta-speed', parseFloat(avgSpeed), prevStats.speed, false);
@@ -2319,29 +2323,13 @@
 
             prevStats = { density: avgDensity, hot: hotZones, speed: parseFloat(avgSpeed), conf: confidence };
 
-            // Behavioral analytics
-            const flowRate = Math.round(avgSpeed * zones.length * 0.8);
-            const avgWait = Math.max(0, Math.round((100 - parseInt(avgSpeed * 20)) * 0.5));
-            const throughput = Math.min(100, Math.round(avgSpeed * 25));
-            const reroute = Math.min(100, Math.round(route.time_saved * 2.5));
-
-            document.getElementById('analytics-flow').textContent = `${flowRate} ppl/min`;
-            document.getElementById('analytics-wait').textContent = `${avgWait}s`;
-            document.getElementById('analytics-throughput').textContent = `${throughput}%`;
-            document.getElementById('analytics-reroute').textContent = `${reroute}%`;
-
-            document.getElementById('bar-flow').style.width = `${Math.min(100, flowRate / 2)}%`;
-            document.getElementById('bar-wait').style.width = `${Math.min(100, avgWait * 2)}%`;
-            document.getElementById('bar-throughput').style.width = `${throughput}%`;
-            document.getElementById('bar-reroute').style.width = `${reroute}%`;
-
             // Overlay
             document.getElementById('overlay-agents').textContent = agents.length.toString();
-            animateValue('overlay-time-saved', parseInt(document.getElementById('overlay-time-saved').textContent) || 0, route.time_saved, 1000, false, 's');
         }
 
         function setDelta(id, current, prev, invertColor) {
             const el = document.getElementById(id);
+            if (!el) return;
             const diff = current - prev;
             if (diff === 0 || prev === 0) {
                 el.textContent = '—';
@@ -2361,6 +2349,7 @@
         function updateRoute(route) {
             const pathEl = document.getElementById('route-path');
             const timeEl = document.getElementById('time-saved-box');
+            if (!pathEl || !timeEl) return;
 
             pathEl.innerHTML = route.path.map((node, i) => {
                 let cls = 'path-node';
@@ -2577,11 +2566,13 @@
         let clickMode = 'start';
         function handleZoneClick(zoneId) {
             if (clickMode === 'start') {
-                document.getElementById('route-start').value = zoneId;
+                const startEl = document.getElementById('route-start');
+                if (startEl) startEl.value = zoneId;
                 clickMode = 'end';
                 addLog('route', `Start zone set → ${zoneId}`);
             } else {
-                document.getElementById('route-end').value = zoneId;
+                const endEl = document.getElementById('route-end');
+                if (endEl) endEl.value = zoneId;
                 clickMode = 'start';
                 addLog('route', `End zone set → ${zoneId} — recalculating route`);
                 fetchData();
@@ -3401,8 +3392,10 @@
         
         async function fetchData() {
             try {
-                const start = document.getElementById('route-start').value.toUpperCase();
-                const end = document.getElementById('route-end').value.toUpperCase();
+                const startEl = document.getElementById('route-start');
+                const endEl = document.getElementById('route-end');
+                const start = startEl ? startEl.value.toUpperCase() : 'A1';
+                const end = endEl ? endEl.value.toUpperCase() : 'E5';
                 const url = `${API_BASE}/api/state?s=${start}&e=${end}`;
 
                 const res = await fetch(url);
@@ -3754,23 +3747,28 @@
 
             setInterval(fetchData, REFRESH_INTERVAL);
 
-            // Real-time jitter effect on analytics
+            // Real-time jitter effect on analytics (safe-guarded)
             setInterval(() => {
                 if (!lastZoneData || lastZoneData.length === 0) return;
 
                 const flowEl = document.getElementById('analytics-flow');
-                let currentFlow = parseInt(flowEl.textContent) || 0;
-                if (currentFlow > 0 && Math.random() > 0.3) {
-                    let newFlow = Math.max(0, currentFlow + Math.round((Math.random() - 0.5) * 4));
-                    flowEl.textContent = `${newFlow} ppl/min`;
-                    document.getElementById('bar-flow').style.width = `${Math.min(100, newFlow / 2)}%`;
+                if (flowEl) {
+                    let currentFlow = parseInt(flowEl.textContent) || 0;
+                    if (currentFlow > 0 && Math.random() > 0.3) {
+                        let newFlow = Math.max(0, currentFlow + Math.round((Math.random() - 0.5) * 4));
+                        flowEl.textContent = `${newFlow} ppl/min`;
+                        const barFlow = document.getElementById('bar-flow');
+                        if (barFlow) barFlow.style.width = `${Math.min(100, newFlow / 2)}%`;
+                    }
                 }
 
                 const speedEl = document.getElementById('stat-avg-speed');
-                let currentSpeed = parseFloat(speedEl.textContent) || 0;
-                if (currentSpeed > 0 && Math.random() > 0.3) {
-                    let newSpeed = Math.max(0, currentSpeed + (Math.random() - 0.5) * 0.04).toFixed(2);
-                    speedEl.textContent = newSpeed;
+                if (speedEl) {
+                    let currentSpeed = parseFloat(speedEl.textContent) || 0;
+                    if (currentSpeed > 0 && Math.random() > 0.3) {
+                        let newSpeed = Math.max(0, currentSpeed + (Math.random() - 0.5) * 0.04).toFixed(2);
+                        speedEl.textContent = newSpeed;
+                    }
                 }
             }, 600);
 
