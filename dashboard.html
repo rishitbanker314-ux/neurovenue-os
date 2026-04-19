@@ -1948,7 +1948,7 @@
             <div class="header-right">
                 <div class="system-status">
                     <div class="status-dot-live"></div>
-                    <span class="status-text">LIVE</span>
+                    <span class="status-text">CONNECTED</span>
                 </div>
                 <div class="ai-indicator">
                     <span class="ai-brain">🧠</span>
@@ -2056,6 +2056,12 @@
                         // Placeholder replaced by server.py at runtime
                         const INJECTED_MAPS_KEY = "[[MAPS_API_KEY]]";
                     </script>
+
+                    <!-- User Suggested Fallback / Loading Text -->
+                    <div style="position: absolute; top: 150px; left: 50%; transform: translateX(-50%); text-align: center; color: rgba(255,255,255,0.6); font-family: 'Orbitron', sans-serif; z-index: 1;">
+                        <h2>Live Stadium Simulation Active</h2>
+                        <p style="font-family: 'JetBrains Mono', monospace; opacity: 0.8;">Simulation Visuals Loading...<br>Current Congestion: 42%</p>
+                    </div>
 
                     <!-- Canvas simulation — renders immediately, no API key needed -->
                     <canvas id="sim-canvas" style="position:absolute;inset:0;width:100%;height:100%;display:block;z-index:2;"></canvas>
@@ -3497,7 +3503,8 @@
                 // Keep Live indicator green
                 document.querySelector('.status-dot-live').style.background = 'var(--green-core)';
                 document.querySelector('.status-dot-live').style.boxShadow = '0 0 8px var(--green-core)';
-                document.querySelector('.status-text').textContent = 'LIVE';
+                document.querySelector('.status-text').textContent = 'CONNECTED';
+                document.getElementById('phase-badge').textContent = 'CONNECTED';
 
             } catch (err) {
                 console.error('Fetch error:', err);
