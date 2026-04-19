@@ -2336,7 +2336,7 @@
             document.getElementById('bar-reroute').style.width = `${reroute}%`;
 
             // Overlay
-            document.getElementById('overlay-agents').textContent = document.getElementById('slider-agents').value;
+            document.getElementById('overlay-agents').textContent = agents.length.toString();
             animateValue('overlay-time-saved', parseInt(document.getElementById('overlay-time-saved').textContent) || 0, route.time_saved, 1000, false, 's');
         }
 
@@ -3329,8 +3329,8 @@
         function render() {
             frameCount++;
 
-            // ── Agent count from slider ──
-            const targetCount = parseInt(document.getElementById('slider-agents').value);
+            // ── Agent count (Standard Crowd) ──
+            const targetCount = 150;
             while (agents.length < targetCount) {
                 // Spawn new agents at edge positions (entry points)
                 const side = Math.floor(Math.random() * 4);
@@ -3344,8 +3344,8 @@
             while (agents.length > targetCount) agents.pop();
 
             // ── Sim speed ──
-            const speedMult = parseInt(document.getElementById('slider-speed').value) / 10;
-            const pressure = parseInt(document.getElementById('slider-pressure').value);
+            const speedMult = 1.0;
+            const pressure = 50;
 
             // ── Clear ──
             ctx.clearRect(0, 0, simW, simH);
@@ -3738,7 +3738,7 @@
             // Defer first resize to allow flex layout to settle
             requestAnimationFrame(() => {
                 resizeCanvas();
-                initAgents(parseInt(document.getElementById('slider-agents').value));
+                initAgents(150);
                 render();
             });
             window.addEventListener('resize', resizeCanvas);
